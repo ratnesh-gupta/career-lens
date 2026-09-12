@@ -21,6 +21,7 @@ export const EP = {
   RESUME_UPLOAD_URL: "/resumes/upload-url",
   RESUME_CONFIRM: (id: string) => `/resumes/${id}/confirm`,
   RESUME_GET: (id: string) => `/resumes/${id}`,
+  RESUME_STATUS: (id: string) => `/resumes/${id}/status`,
   RESUME_DELETE: (id: string) => `/resumes/${id}`,
   RESUME_ANALYSIS: (id: string) => `/resumes/${id}/analysis`,
   RESUME_SET_PRIMARY: (id: string) => `/resumes/${id}/primary`,

@@ -1,20 +1,22 @@
 import { delay, http, HttpResponse } from "msw";
 
+import type { ResumeStatus } from "@careerlens/shared-types";
+
 import { mockResume, mockResumes } from "../fixtures";
 
 const BASE = "*/api/v1";
 
 /** In-memory status simulation for processing transitions. */
-const statusById = new Map<string, string>();
+const statusById = new Map<string, ResumeStatus>();
 const statusStartedAt = new Map<string, number>();
 
-function resolveStatus(id: string): string {
+function resolveStatus(id: string): ResumeStatus {
   const started = statusStartedAt.get(id);
   if (!started) return statusById.get(id) ?? "analyzed";
 
   const elapsed = Date.now() - started;
-  // uploaded → processing (~2s) → analyzed (~6s total)
-  if (elapsed < 2000) return "uploaded";
+  // pending → processing (~2s) → analyzed (~6s total)
+  if (elapsed < 2000) return "pending";
   if (elapsed < 6000) return "processing";
   statusById.set(id, "analyzed");
   statusStartedAt.delete(id);
@@ -30,7 +32,7 @@ export const resumeHandlers = [
   http.post(`${BASE}/resumes/upload-url`, async () => {
     await delay(300);
     const resumeId = `rsm_${Date.now()}`;
-    statusById.set(resumeId, "uploaded");
+    statusById.set(resumeId, "pending");
     statusStartedAt.set(resumeId, Date.now());
     return HttpResponse.json({
       success: true,
@@ -49,7 +51,7 @@ export const resumeHandlers = [
     statusStartedAt.set(id, Date.now());
     return HttpResponse.json({
       success: true,
-      data: { ...mockResume, id, status: "processing" },
+      data: { ...mockResume, id, status: "processing" as const, analysis: null, processedAt: null },
     });
   }),
 
@@ -59,7 +61,13 @@ export const resumeHandlers = [
     const status = resolveStatus(id);
     return HttpResponse.json({
       success: true,
-      data: { ...mockResume, id, status },
+      data: {
+        ...mockResume,
+        id,
+        status,
+        analysis: status === "analyzed" ? mockResume.analysis : null,
+        processedAt: status === "analyzed" ? mockResume.processedAt : null,
+      },
     });
   }),
 
@@ -67,13 +75,10 @@ export const resumeHandlers = [
     await delay(150);
     const id = String(params.id);
     const status = resolveStatus(id);
+    const progress = status === "analyzed" ? 100 : status === "processing" ? 55 : 15;
     return HttpResponse.json({
       success: true,
-      data: {
-        id,
-        status,
-        progress: status === "analyzed" ? 100 : status === "processing" ? 55 : 15,
-      },
+      data: { id, status, progress },
     });
   }),
 
