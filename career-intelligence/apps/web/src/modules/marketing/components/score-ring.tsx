@@ -9,7 +9,7 @@ export interface ScoreRingProps {
   label?: string;
 }
 
-/** Static SVG score ring — visual signature for CareerLens. */
+/** SVG score ring — CareerLens visual signature. */
 export function ScoreRing({
   score,
   max = 100,
@@ -40,7 +40,19 @@ export function ScoreRing({
       role="img"
       aria-label={label ?? `Career Score ${clamped} out of ${max}`}
     >
-      <svg width={size} height={size} className="-rotate-90" aria-hidden>
+      <div
+        className="pointer-events-none absolute inset-[12%] rounded-full opacity-40 blur-2xl"
+        style={{
+          background:
+            clamped >= 70
+              ? "radial-gradient(circle, rgba(22,163,74,0.35), transparent 70%)"
+              : clamped >= 50
+                ? "radial-gradient(circle, rgba(245,158,11,0.35), transparent 70%)"
+                : "radial-gradient(circle, rgba(220,38,38,0.3), transparent 70%)",
+        }}
+        aria-hidden
+      />
+      <svg width={size} height={size} className="-rotate-90 drop-shadow-sm" aria-hidden>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -48,7 +60,7 @@ export function ScoreRing({
           fill="none"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          className="text-border"
+          className="text-border/80"
         />
         <circle
           cx={size / 2}
@@ -67,7 +79,9 @@ export function ScoreRing({
         <span className={cn("text-3xl font-bold tracking-tight tabular-nums", tone)}>
           {clamped}
         </span>
-        <span className="text-xs text-muted-foreground">/{max}</span>
+        <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          /{max}
+        </span>
       </div>
     </div>
   );

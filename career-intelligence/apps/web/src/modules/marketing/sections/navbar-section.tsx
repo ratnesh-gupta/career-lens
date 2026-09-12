@@ -12,6 +12,17 @@ export interface NavbarSectionProps {
   className?: string;
 }
 
+function BrandMark({ className }: { className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center gap-2", className)}>
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground shadow-sm">
+        CL
+      </span>
+      <span className="text-base font-semibold tracking-tight">{LANDING.brand.name}</span>
+    </span>
+  );
+}
+
 export function NavbarSection({ className }: NavbarSectionProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -37,9 +48,9 @@ export function NavbarSection({ className }: NavbarSectionProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full transition-colors duration-150",
+        "sticky top-0 z-50 w-full transition-all duration-200",
         scrolled
-          ? "border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80"
+          ? "border-b border-border/80 bg-surface/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-surface/75"
           : "bg-transparent",
         className,
       )}
@@ -48,27 +59,24 @@ export function NavbarSection({ className }: NavbarSectionProps) {
         className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6"
         aria-label="Primary"
       >
-        <Link
-          to={ROUTES.HOME}
-          className="text-lg font-semibold tracking-tight text-foreground transition-opacity hover:opacity-80"
-        >
-          {LANDING.brand.name}
+        <Link to={ROUTES.HOME} className="transition-opacity hover:opacity-80">
+          <BrandMark />
         </Link>
 
-        <ul className="hidden items-center gap-8 md:flex">
+        <ul className="hidden items-center gap-1 md:flex">
           {LANDING.nav.links.map((link) => (
             <li key={link.href}>
               {link.href.startsWith("#") ? (
                 <a
                   href={link.href}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="rounded-full px-3.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {link.label}
                 </a>
               ) : (
                 <Link
                   to={link.href}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="rounded-full px-3.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {link.label}
                 </Link>
@@ -77,15 +85,18 @@ export function NavbarSection({ className }: NavbarSectionProps) {
           ))}
         </ul>
 
-        <div className="hidden md:block">
-          <Button asChild size="sm">
+        <div className="hidden items-center gap-2 md:flex">
+          <Button asChild variant="ghost" size="sm" className="rounded-full">
+            <Link to={ROUTES.LOGIN}>Sign in</Link>
+          </Button>
+          <Button asChild size="sm" className="rounded-full px-4">
             <Link to={ROUTES.REGISTER}>{LANDING.nav.cta}</Link>
           </Button>
         </div>
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-foreground md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground hover:bg-muted md:hidden"
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((v) => !v)}
@@ -95,14 +106,14 @@ export function NavbarSection({ className }: NavbarSectionProps) {
       </nav>
 
       {mobileOpen ? (
-        <div className="border-b border-border bg-surface px-4 py-4 md:hidden">
-          <ul className="flex flex-col gap-3">
+        <div className="border-b border-border bg-surface/95 px-4 py-5 backdrop-blur md:hidden">
+          <ul className="flex flex-col gap-1">
             {LANDING.nav.links.map((link) => (
               <li key={link.href}>
                 {link.href.startsWith("#") ? (
                   <a
                     href={link.href}
-                    className="block py-2 text-sm text-foreground"
+                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
                     onClick={() => setMobileOpen(false)}
                   >
                     {link.label}
@@ -110,7 +121,7 @@ export function NavbarSection({ className }: NavbarSectionProps) {
                 ) : (
                   <Link
                     to={link.href}
-                    className="block py-2 text-sm text-foreground"
+                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
                     onClick={() => setMobileOpen(false)}
                   >
                     {link.label}
@@ -118,8 +129,13 @@ export function NavbarSection({ className }: NavbarSectionProps) {
                 )}
               </li>
             ))}
-            <li className="pt-2">
-              <Button asChild className="w-full">
+            <li className="mt-3 grid gap-2 border-t border-border pt-4">
+              <Button asChild variant="outline" className="w-full rounded-full">
+                <Link to={ROUTES.LOGIN} onClick={() => setMobileOpen(false)}>
+                  Sign in
+                </Link>
+              </Button>
+              <Button asChild className="w-full rounded-full">
                 <Link to={ROUTES.REGISTER} onClick={() => setMobileOpen(false)}>
                   {LANDING.nav.cta}
                 </Link>
