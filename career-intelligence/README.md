@@ -2,6 +2,8 @@
 
 > "How does the job market see you?"
 
+R1a frontend: landing → auth → resume upload → analysis → Career Score → share.
+
 ## Prerequisites
 
 | Tool | Version |
@@ -10,60 +12,72 @@
 | pnpm | ≥ 9 |
 
 ```bash
-# Install pnpm if you don't have it
 npm install -g pnpm@latest
-
-# Install all dependencies
+cd career-intelligence
 pnpm install
 ```
+
+## Environment
+
+```bash
+cp apps/web/.env.example apps/web/.env.local
+```
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_API_BASE_URL` | API base (default `http://localhost:8000/api/v1`) |
+| `VITE_ENABLE_MSW` | Mock API in dev (default `true`) |
+| `VITE_SENTRY_DSN` | Optional Sentry |
+| `VITE_POSTHOG_KEY` | Optional PostHog |
+| `VITE_APP_URL` | Canonical app URL for SEO/share links |
 
 ## Development
 
 ```bash
-# Start the web app dev server (with MSW mocks)
 make dev
 # or
-pnpm dev
+pnpm --filter @careerlens/web dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
+
+MSW intercepts `/api/v1/*` in development when `VITE_ENABLE_MSW=true`.
+
+### Happy path (mocked)
+
+1. `/` — marketing landing  
+2. `/register` — any valid form → dashboard  
+3. `/resumes/upload` — PDF → processing poll → analysis  
+4. `/score` — Career Score + share link  
+5. `/score/shr_abc123xyz` — public score card  
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `make dev` | Start web dev server |
-| `make build` | Production build |
-| `make lint` | Lint all packages |
-| `make test` | Run unit tests (Vitest) |
-| `make test-e2e` | Run E2E tests (Playwright) |
-| `make format` | Format with Prettier |
-| `make typecheck` | TypeScript check all packages |
-| `make clean` | Remove build artifacts |
+| `pnpm dev` | Web dev server |
+| `pnpm build` | Production build |
+| `pnpm lint` | ESLint |
+| `pnpm test` | Vitest unit tests |
+| `pnpm test:e2e` | Playwright |
+| `pnpm typecheck` | TypeScript |
+| `make format` | Prettier |
 
-## Monorepo Structure
+## Monorepo
 
 ```
 career-intelligence/
-├── apps/
-│   └── web/              # React 18 + Vite frontend
-├── packages/
-│   ├── shared-types/     # API contracts (TypeScript types only)
-│   ├── shared-config/    # Shared ESLint / Tailwind / TS config
-│   └── shared-ui/        # (Step 3) Shared component library
-├── docs/                 # Product, architecture, API, AI docs
-├── infrastructure/       # Docker, nginx, scripts
-└── tests/                # E2E fixtures and Playwright tests
+├── apps/web/                 # React 18 + Vite + Tailwind + shadcn
+├── packages/shared-types/    # API contracts
+├── packages/shared-config/
+└── ...
 ```
 
-## Architecture Decisions
+## Frontend stack (locked)
 
-See [`docs/decisions/`](./docs/decisions/) for ADRs.
+React 18, TypeScript, Vite, Tailwind, shadcn/ui, TanStack Query, Zustand, React Router, RHF + Zod, MSW, Vitest, Playwright, Sentry, PostHog.
 
-## Environment Variables
+## R1a vs R1b
 
-Copy `.env.example` to `.env.local` in `apps/web/` before running:
-
-```bash
-cp apps/web/.env.example apps/web/.env.local
-```
+- **R1a:** Auth, resume PDF upload/analysis, Career Score, share, public score  
+- **R1b (Coming soon):** Optimization, versions, billing, target role  

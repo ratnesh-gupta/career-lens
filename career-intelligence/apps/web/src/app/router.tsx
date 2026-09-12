@@ -46,7 +46,6 @@ function ProtectedLayout() {
 }
 
 export const router = createBrowserRouter([
-  // —— Public marketing ——
   {
     path: ROUTES.HOME,
     element: lazyElement(() => import("@/modules/marketing/pages/LandingPage"), "Landing"),
@@ -68,7 +67,6 @@ export const router = createBrowserRouter([
     element: lazyElement(() => import("@/modules/marketing/pages/TermsPage"), "Terms"),
   },
 
-  // Public score & profile
   {
     path: ROUTES.PUBLIC_SCORE_PATTERN,
     element: lazyElement(() => import("@/modules/career-score/pages/PublicScorePage"), "Public score"),
@@ -78,7 +76,6 @@ export const router = createBrowserRouter([
     element: lazyElement(() => import("@/modules/profile/pages/PublicProfilePage"), "Public profile"),
   },
 
-  // —— Guest-only auth ——
   {
     element: <GuestLayout />,
     children: [
@@ -111,7 +108,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // —— Authenticated app (shell + sidebar) ——
   {
     element: <ProtectedLayout />,
     children: [
@@ -137,8 +133,11 @@ export const router = createBrowserRouter([
         element: lazyElement(() => import("@/modules/resume/pages/ResumeUploadPage"), "Upload resume"),
       },
       {
-        path: ROUTES.RESUME_DETAIL_PATTERN,
-        element: lazyElement(() => import("@/modules/resume/pages/ResumeDetailPage"), "Resume detail"),
+        path: ROUTES.RESUME_PROCESSING_PATTERN,
+        element: lazyElement(
+          () => import("@/modules/resume/pages/ResumeProcessingPage"),
+          "Processing",
+        ),
       },
       {
         path: ROUTES.RESUME_ANALYSIS_PATTERN,
@@ -146,6 +145,10 @@ export const router = createBrowserRouter([
           () => import("@/modules/resume/pages/ResumeAnalysisPage"),
           "Resume analysis",
         ),
+      },
+      {
+        path: ROUTES.RESUME_DETAIL_PATTERN,
+        element: lazyElement(() => import("@/modules/resume/pages/ResumeDetailPage"), "Resume detail"),
       },
 
       {
@@ -185,7 +188,6 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // R1b
       {
         path: ROUTES.TARGET_ROLE,
         element: (
