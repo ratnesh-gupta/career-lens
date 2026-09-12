@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import * as Sentry from "@sentry/react";
 
 interface Props {
   children: ReactNode;
@@ -22,7 +23,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   override componentDidCatch(error: Error, info: ErrorInfo): void {
     console.error("[ErrorBoundary]", error, info.componentStack);
-    // Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
+    Sentry.captureException(error, {
+      extra: { componentStack: info.componentStack },
+    });
   }
 
   override render(): ReactNode {
@@ -37,6 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              aria-hidden
             >
               <path
                 strokeLinecap="round"
@@ -52,12 +56,13 @@ export class ErrorBoundary extends Component<Props, State> {
             page.
           </p>
           <button
+            type="button"
             onClick={() => window.location.reload()}
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             Refresh page
           </button>
-          {(import.meta as { env?: { DEV?: boolean } }).env?.DEV === true && this.state.error && (
+          {import.meta.env.DEV && this.state.error && (
             <pre className="mt-4 max-w-lg overflow-auto rounded-md bg-muted p-4 text-left text-xs text-muted-foreground">
               {this.state.error.stack}
             </pre>
