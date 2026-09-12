@@ -35,13 +35,13 @@ export function Topbar() {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-surface px-4">
-      <div className="flex items-center gap-2">
+    <header className="flex h-14 items-center justify-between border-b border-border/80 bg-surface/90 px-4 backdrop-blur-sm">
+      <div className="flex items-center gap-1">
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="rounded-full md:hidden"
           aria-label="Open menu"
           onClick={toggleMobileNav}
         >
@@ -51,7 +51,7 @@ export function Topbar() {
           type="button"
           variant="ghost"
           size="icon"
-          className="hidden md:inline-flex"
+          className="hidden rounded-full md:inline-flex"
           aria-label="Toggle sidebar"
           onClick={toggleSidebar}
         >
@@ -60,7 +60,14 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-1">
-        <Button type="button" variant="ghost" size="icon" aria-label="Notifications" disabled>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          aria-label="Notifications"
+          disabled
+        >
           <Bell className="h-4 w-4" />
         </Button>
 
@@ -69,16 +76,18 @@ export function Topbar() {
             <Button
               type="button"
               variant="ghost"
-              className="relative h-9 w-9 rounded-full"
+              className="relative h-9 w-9 rounded-full ring-offset-background focus-visible:ring-2"
               aria-label="User menu"
             >
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-8 w-8 border border-border">
                 {user?.avatarUrl ? <AvatarImage src={user.avatarUrl} alt="" /> : null}
-                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 rounded-xl">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-0.5">
                 <span className="text-sm font-medium">{user?.displayName ?? "Account"}</span>

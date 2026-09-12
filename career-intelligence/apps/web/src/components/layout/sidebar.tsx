@@ -41,21 +41,24 @@ export function Sidebar() {
 
   const navClass = (active: boolean) =>
     cn(
-      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150",
       active
-        ? "bg-primary/10 text-primary"
+        ? "bg-primary text-primary-foreground shadow-sm"
         : "text-muted-foreground hover:bg-muted hover:text-foreground",
     );
 
   const content = (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center border-b border-border px-4">
+      <div className="flex h-14 items-center gap-2 border-b border-border/80 px-4">
         <Link
           to={ROUTES.DASHBOARD}
-          className="text-lg font-semibold tracking-tight text-foreground"
+          className="inline-flex items-center gap-2"
           onClick={() => setMobileNavOpen(false)}
         >
-          CareerLens
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground">
+            CL
+          </span>
+          <span className="text-base font-semibold tracking-tight text-foreground">CareerLens</span>
         </Link>
       </div>
 
@@ -77,7 +80,7 @@ export function Sidebar() {
           );
         })}
 
-        <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <p className="px-3 pb-1 pt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Coming soon
         </p>
         {R1B_NAV.map((item) => {
@@ -86,12 +89,12 @@ export function Sidebar() {
             <Link
               key={item.href}
               to={item.href}
-              className={cn(navClass(false), "opacity-70")}
+              className={cn(navClass(false), "opacity-75")}
               onClick={() => setMobileNavOpen(false)}
             >
               <Icon className="h-4 w-4 shrink-0" aria-hidden />
               <span className="flex-1">{item.label}</span>
-              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                 Soon
               </span>
             </Link>
@@ -103,26 +106,24 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Desktop */}
       <aside
         className={cn(
-          "hidden border-r border-border bg-surface md:flex md:flex-col",
-          sidebarOpen ? "md:w-56" : "md:w-0 md:overflow-hidden",
+          "hidden border-r border-border/80 bg-surface md:flex md:flex-col",
+          sidebarOpen ? "md:w-60" : "md:w-0 md:overflow-hidden",
         )}
       >
         {content}
       </aside>
 
-      {/* Mobile drawer */}
       {mobileNavOpen ? (
         <div className="fixed inset-0 z-50 md:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-foreground/20"
+            className="absolute inset-0 bg-foreground/25 backdrop-blur-[2px]"
             aria-label="Close navigation"
             onClick={() => setMobileNavOpen(false)}
           />
-          <aside className="absolute left-0 top-0 h-full w-64 border-r border-border bg-surface shadow-lg">
+          <aside className="absolute left-0 top-0 h-full w-72 border-r border-border bg-surface shadow-xl">
             {content}
           </aside>
         </div>
