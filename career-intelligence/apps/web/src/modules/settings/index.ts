@@ -1,3 +1,3 @@
-// Public API for the settings module.
-// Only import from this file — never from internal module paths.
-// Exports are added here as pages, hooks, and components are built out.
+export { default as SettingsPage } from "./pages/SettingsPage";
+export { default as PrivacySettingsPage } from "./pages/PrivacySettingsPage";
+export { default as AccountSettingsPage } from "./pages/AccountSettingsPage";

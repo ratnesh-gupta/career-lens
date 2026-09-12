@@ -1,7 +1,5 @@
+import { PlaceholderPage } from "@/components/feedback/placeholder-page";
+
 export default function LoginPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">LoginPage — Step 3</p>
-    </div>
-  );
+  return <PlaceholderPage title="Login" description="Auth forms ship in a later step." />;
 }

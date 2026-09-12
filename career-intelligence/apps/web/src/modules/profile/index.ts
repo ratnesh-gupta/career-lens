@@ -1,3 +1,3 @@
-// Public API for the profile module.
-// Only import from this file — never from internal module paths.
-// Exports are added here as pages, hooks, and components are built out.
+export { default as ProfilePage } from "./pages/ProfilePage";
+export { default as ProfileEditPage } from "./pages/ProfileEditPage";
+export { default as PublicProfilePage } from "./pages/PublicProfilePage";

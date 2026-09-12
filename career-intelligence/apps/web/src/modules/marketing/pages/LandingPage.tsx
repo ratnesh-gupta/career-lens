@@ -1,7 +1,10 @@
+import { PlaceholderPage } from "@/components/feedback/placeholder-page";
+
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">LandingPage — Step 3</p>
-    </div>
+    <PlaceholderPage
+      title="Landing"
+      description="Full marketing landing page ships in Step 4."
+    />
   );
 }

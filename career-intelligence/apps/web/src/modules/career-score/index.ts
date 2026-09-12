@@ -1,3 +1,3 @@
-// Public API for the career-score module.
-// Only import from this file — never from internal module paths.
-// Exports are added here as pages, hooks, and components are built out.
+export { default as CareerScorePage } from "./pages/CareerScorePage";
+export { default as ScoreBreakdownPage } from "./pages/ScoreBreakdownPage";
+export { default as PublicScorePage } from "./pages/PublicScorePage";

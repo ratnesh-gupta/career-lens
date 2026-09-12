@@ -1,3 +1,5 @@
-// Public API for the auth module.
-// Only import from this file — never from internal module paths.
-// Exports are added here as pages, hooks, and components are built out.
+export { default as LoginPage } from "./pages/LoginPage";
+export { default as SignupPage } from "./pages/SignupPage";
+export { default as ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+export { default as ResetPasswordPage } from "./pages/ResetPasswordPage";
+export { default as VerifyEmailPage } from "./pages/VerifyEmailPage";

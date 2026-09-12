@@ -1,7 +1,5 @@
+import { PlaceholderPage } from "@/components/feedback/placeholder-page";
+
 export default function CareerScorePage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">CareerScorePage — Step 3</p>
-    </div>
-  );
+  return <PlaceholderPage title="My Career Score" description="Score UI ships in Step 6." />;
 }
