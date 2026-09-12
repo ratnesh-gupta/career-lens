@@ -1,6 +1,5 @@
 /** Typed route path constants.
  *  Import ROUTES rather than string literals throughout the app.
- *  Matches the React Router definitions in app/router.tsx (Step 3).
  */
 
 export const ROUTES = {
@@ -14,7 +13,7 @@ export const ROUTES = {
   // Auth (guest)
   LOGIN: "/login",
   REGISTER: "/register",
-  /** @deprecated Prefer ROUTES.REGISTER — kept for older links */
+  /** @deprecated Prefer ROUTES.REGISTER */
   SIGNUP: "/register",
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password",
@@ -38,6 +37,8 @@ export const ROUTES = {
   RESUME_DETAIL_PATTERN: "/resumes/:id",
   RESUME_ANALYSIS: (id: string) => `/resumes/${id}/analysis` as const,
   RESUME_ANALYSIS_PATTERN: "/resumes/:id/analysis",
+  RESUME_PROCESSING: (id: string) => `/resumes/${id}/processing` as const,
+  RESUME_PROCESSING_PATTERN: "/resumes/:id/processing",
 
   // Career score (authenticated)
   SCORE: "/score",

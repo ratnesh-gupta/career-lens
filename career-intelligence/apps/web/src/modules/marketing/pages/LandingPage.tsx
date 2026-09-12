@@ -1,5 +1,9 @@
+import { useEffect } from "react";
+
 import { SeoHead } from "@/components/seo/head";
 import { env } from "@/config/env";
+import { captureEvent, EVENTS } from "@/utils/analytics";
+import { captureReferralFromUrl } from "@/utils/referral";
 
 import { LANDING } from "../content/landing-content";
 import { FaqSection } from "../sections/faq-section";
@@ -47,6 +51,11 @@ const jsonLd = [
 ];
 
 export default function LandingPage() {
+  useEffect(() => {
+    captureReferralFromUrl();
+    captureEvent(EVENTS.LANDING_VIEWED);
+  }, []);
+
   return (
     <>
       <SeoHead
