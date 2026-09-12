@@ -5,6 +5,8 @@ import type { RegisterInput } from "@careerlens/shared-types";
 
 import { ROUTES } from "@/config/routes";
 import { useAuthStore } from "@/stores/auth.store";
+import { captureEvent, EVENTS } from "@/utils/analytics";
+import { getStoredReferral } from "@/utils/referral";
 
 function getErrorMessage(error: unknown): string {
   if (error && typeof error === "object" && "message" in error) {
@@ -23,7 +25,11 @@ export function useRegister() {
     setError(null);
     setIsSubmitting(true);
     try {
+      const ref = getStoredReferral();
       await register(values);
+      if (ref) {
+        captureEvent(EVENTS.REFERRAL_SIGNUP, { ref });
+      }
       navigate(ROUTES.DASHBOARD, { replace: true });
     } catch (err) {
       setError(getErrorMessage(err));
