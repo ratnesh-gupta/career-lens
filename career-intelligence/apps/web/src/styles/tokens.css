@@ -1,0 +1,144 @@
+/* ─────────────────────────────────────────────
+   CareerLens Design Tokens
+   Source of truth for all CSS variables.
+   Consumed by Tailwind and shadcn/ui.
+───────────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  /* ── Colour: Surfaces ── */
+  --color-bg: #fafaf9;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f5f4;
+  --color-border: #e7e5e4;
+
+  /* ── Colour: Text ── */
+  --color-text: #1c1917;
+  --color-text-muted: #57534e;
+  --color-text-subtle: #a8a29e;
+
+  /* ── Colour: Brand ── */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-foreground: #ffffff;
+
+  /* ── Colour: Semantic ── */
+  --color-accent: #f59e0b;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+
+  /* ── Colour: Score ── */
+  --color-score-excellent: #16a34a;
+  --color-score-good: #65a30d;
+  --color-score-fair: #f59e0b;
+  --color-score-poor: #dc2626;
+
+  /* ── shadcn/ui HSL token bridge ──
+     shadcn components use hsl(var(--*)) notation.
+     We mirror CareerLens semantic colours here.  */
+  --background: 60 9% 98%;           /* #fafaf9 */
+  --foreground: 20 14% 10%;          /* #1c1917 */
+
+  --card: 0 0% 100%;
+  --card-foreground: 20 14% 10%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14% 10%;
+
+  --primary: 243 75% 59%;            /* #4f46e5 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 60 5% 96%;            /* #f5f5f4 */
+  --secondary-foreground: 20 14% 10%;
+
+  --muted: 60 5% 96%;
+  --muted-foreground: 25 6% 45%;     /* #57534e */
+
+  --accent: 38 92% 50%;              /* #f59e0b */
+  --accent-foreground: 20 14% 10%;
+
+  --destructive: 0 72% 51%;          /* #dc2626 */
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 30 6% 91%;               /* #e7e5e4 */
+  --input: 30 6% 91%;
+  --ring: 243 75% 59%;               /* matches primary */
+
+  /* ── Radius ── */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* ── Typography ── */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* ── Text scale ── */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  /* ── Spacing ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+
+  /* ── Transitions ── */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Dark mode tokens (defined, not activated in R1a) ── */
+.dark {
+  --color-bg: #0c0a09;
+  --color-surface: #1c1917;
+  --color-surface-muted: #292524;
+  --color-border: #44403c;
+  --color-text: #fafaf9;
+  --color-text-muted: #a8a29e;
+  --color-text-subtle: #78716c;
+
+  --background: 20 14% 4%;
+  --foreground: 60 9% 98%;
+  --card: 20 14% 8%;
+  --card-foreground: 60 9% 98%;
+  --popover: 20 14% 8%;
+  --popover-foreground: 60 9% 98%;
+  --primary: 243 75% 63%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 20 14% 12%;
+  --secondary-foreground: 60 9% 98%;
+  --muted: 20 14% 12%;
+  --muted-foreground: 25 6% 65%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 20 14% 4%;
+  --destructive: 0 63% 40%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 20 14% 20%;
+  --input: 20 14% 20%;
+  --ring: 243 75% 63%;
+}

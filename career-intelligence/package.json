@@ -1,0 +1,24 @@
+{
+  "name": "career-intelligence",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "pnpm --filter @careerlens/web dev",
+    "build": "pnpm --filter @careerlens/web build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter @careerlens/web test:e2e",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\" --ignore-path .gitignore",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r --parallel exec rm -rf dist node_modules .turbo"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.34.3"
+}

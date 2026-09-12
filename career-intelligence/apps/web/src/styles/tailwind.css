@@ -1,0 +1,3 @@
+/* Re-export point — import this in components that need only Tailwind utilities
+   without the full global reset. Useful for Storybook or isolated test renders. */
+@tailwind utilities;
