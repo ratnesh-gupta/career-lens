@@ -1,9 +1,10 @@
 import { lazy, Suspense, type ComponentType, type ReactElement } from "react";
-import { createBrowserRouter, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 
 import { RequireAuth, RequireGuest, RequireEntitlement } from "@/components/auth";
 import { ComingSoonPage } from "@/components/feedback/coming-soon-page";
 import { PlaceholderPage } from "@/components/feedback/placeholder-page";
+import { AppShell } from "@/components/layout/app-shell";
 import { ROUTES } from "@/config/routes";
 
 const PageLoader = () => (
@@ -36,10 +37,10 @@ function GuestLayout() {
   );
 }
 
-function AuthLayout() {
+function ProtectedLayout() {
   return (
     <RequireAuth>
-      <Outlet />
+      <AppShell />
     </RequireAuth>
   );
 }
@@ -67,9 +68,7 @@ export const router = createBrowserRouter([
     element: lazyElement(() => import("@/modules/marketing/pages/TermsPage"), "Terms"),
   },
 
-  // Public score & profile (no auth required)
-  // Note: /score/:slug is public; authenticated "my score" is exact /score under AuthLayout.
-  // Static /score/breakdown ranks above /score/:slug in React Router.
+  // Public score & profile
   {
     path: ROUTES.PUBLIC_SCORE_PATTERN,
     element: lazyElement(() => import("@/modules/career-score/pages/PublicScorePage"), "Public score"),
@@ -112,9 +111,9 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // —— Authenticated app ——
+  // —— Authenticated app (shell + sidebar) ——
   {
-    element: <AuthLayout />,
+    element: <ProtectedLayout />,
     children: [
       {
         path: ROUTES.DASHBOARD,
@@ -167,23 +166,26 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.SETTINGS,
         element: lazyElement(() => import("@/modules/settings/pages/SettingsPage"), "Settings"),
-      },
-      {
-        path: ROUTES.SETTINGS_PRIVACY,
-        element: lazyElement(
-          () => import("@/modules/settings/pages/PrivacySettingsPage"),
-          "Privacy settings",
-        ),
-      },
-      {
-        path: ROUTES.SETTINGS_ACCOUNT,
-        element: lazyElement(
-          () => import("@/modules/settings/pages/AccountSettingsPage"),
-          "Account settings",
-        ),
+        children: [
+          { index: true, element: <Navigate to={ROUTES.SETTINGS_ACCOUNT} replace /> },
+          {
+            path: "account",
+            element: lazyElement(
+              () => import("@/modules/settings/pages/AccountSettingsPage"),
+              "Account settings",
+            ),
+          },
+          {
+            path: "privacy",
+            element: lazyElement(
+              () => import("@/modules/settings/pages/PrivacySettingsPage"),
+              "Privacy settings",
+            ),
+          },
+        ],
       },
 
-      // R1b placeholders behind entitlement gate
+      // R1b
       {
         path: ROUTES.TARGET_ROLE,
         element: (
@@ -235,7 +237,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // 404
   {
     path: "*",
     element: (

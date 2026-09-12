@@ -1,5 +1,11 @@
-import { PlaceholderPage } from "@/components/feedback/placeholder-page";
+import { PageContainer } from "@/components/layout/page-container";
 
 export default function CareerScorePage() {
-  return <PlaceholderPage title="My Career Score" description="Score UI ships in Step 6." />;
+  return (
+    <PageContainer title="Career Score" description="Full score UI ships in Step 6.">
+      <p className="text-sm text-muted-foreground">
+        Score gauge, breakdown, and share flow are built in Step 6.
+      </p>
+    </PageContainer>
+  );
 }
