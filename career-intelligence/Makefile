@@ -1,4 +1,4 @@
-.PHONY: dev build lint test format typecheck clean install
+.PHONY: dev build lint test format typecheck clean install api-serve api-test api-migrate compose-up compose-down
 
 # Start the web dev server
 dev:
@@ -38,3 +38,21 @@ clean:
 
 # Full reset: clean + reinstall
 reset: clean install
+
+compose-up:
+	docker compose up -d
+
+compose-down:
+	docker compose down
+
+api-serve:
+	cd apps/api && php artisan serve
+
+api-migrate:
+	cd apps/api && php artisan migrate
+
+api-test:
+	cd apps/api && ./vendor/bin/pest
+
+api-horizon:
+	cd apps/api && php artisan horizon
