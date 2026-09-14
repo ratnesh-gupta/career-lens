@@ -6,6 +6,7 @@ use Database\Factories\CareerProfileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class CareerProfile extends Model
@@ -61,6 +62,11 @@ class CareerProfile extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function careerScores(): HasMany
+    {
+        return $this->hasMany(CareerScore::class);
     }
 
     public function getRouteKeyName(): string
