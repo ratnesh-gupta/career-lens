@@ -12,7 +12,7 @@ export const EP = {
   AUTH_RESET_PASSWORD: "/auth/reset-password",
   AUTH_VERIFY_EMAIL: "/auth/verify-email",
 
-  // Profile
+  // Profile (authenticated)
   PROFILE_GET: "/profile",
   PROFILE_UPDATE: "/profile",
 
@@ -26,12 +26,13 @@ export const EP = {
   RESUME_ANALYSIS: (id: string) => `/resumes/${id}/analysis`,
   RESUME_SET_PRIMARY: (id: string) => `/resumes/${id}/primary`,
 
-  // Career Score
-  SCORE_GENERATE: "/scores",
+  // Career Score (authenticated)
+  SCORE_GENERATE: "/scores/generate",
   SCORE_GET: (id: string) => `/scores/${id}`,
   SCORE_LIST: "/scores",
-  SCORE_PUBLIC: (token: string) => `/scores/public/${token}`,
+  SCORE_SHARE: (id: string) => `/scores/${id}/share`,
 
-  // Public profile
-  PROFILE_PUBLIC: (slug: string) => `/profiles/${slug}`,
+  // Public (no auth) — match OpenAPI / Laravel routes
+  SCORE_PUBLIC: (token: string) => `/public/scores/${token}`,
+  PROFILE_PUBLIC: (slug: string) => `/public/profiles/${slug}`,
 } as const;

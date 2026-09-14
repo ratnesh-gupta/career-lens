@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\CareerProfile\Http\Controllers\ProfileController;
+use App\Modules\CareerProfile\Http\Controllers\PublicProfileController;
 use App\Modules\CareerScore\Http\Controllers\ScoreController;
 use App\Modules\Resume\Http\Controllers\ResumeController;
 use App\Support\ApiResponse;
@@ -23,7 +24,9 @@ Route::prefix('v1')->group(function () {
         return ApiResponse::success(['ok' => true]);
     });
 
+    // Public surfaces — no auth; privacy enforced in controllers
     Route::get('/public/scores/{token}', [ScoreController::class, 'publicShow']);
+    Route::get('/public/profiles/{slug}', [PublicProfileController::class, 'show']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/profile', [ProfileController::class, 'show']);
