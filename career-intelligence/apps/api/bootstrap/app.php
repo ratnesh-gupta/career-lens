@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,7 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // API-only: never redirect guests to a named "login" web route
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return null;
+            }
+
+            return '/login';
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -49,6 +57,24 @@ return Application::configure(basePath: dirname(__DIR__))
                 [],
                 401,
             );
+        });
+
+        // Guard against default auth middleware calling route('login') in API context
+        $exceptions->render(function (RouteNotFoundException $e, Request $request) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            if (str_contains($e->getMessage(), 'Route [login]')) {
+                return ApiResponse::error(
+                    'UNAUTHENTICATED',
+                    'Unauthenticated.',
+                    [],
+                    401,
+                );
+            }
+
+            return null;
         });
 
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {

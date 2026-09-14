@@ -12,7 +12,8 @@ test('unauthenticated profile request returns envelope 401', function () {
 
     $response->assertUnauthorized()
         ->assertJsonPath('success', false)
-        ->assertJsonPath('error.code', 'UNAUTHENTICATED');
+        ->assertJsonPath('error.code', 'UNAUTHENTICATED')
+        ->assertJsonMissingPath('error.message', 'Route [login]');
 });
 
 test('get profile creates canonical career profile when missing', function () {
