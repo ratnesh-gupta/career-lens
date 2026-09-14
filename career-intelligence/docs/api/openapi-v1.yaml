@@ -1,0 +1,820 @@
+openapi: 3.0.3
+info:
+  title: CareerLens API
+  version: 1.0.0
+  description: |
+    R1a REST API contract for CareerLens.
+
+    **Envelope (all JSON responses):**
+    - Success: `{ "success": true, "data": ..., "meta": {} }`
+    - Error: `{ "success": false, "error": { "code", "message", "details" } }`
+
+    HTTP status carries the outcome; error body does not duplicate status.
+  contact:
+    name: CareerLens Engineering
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local API
+  - url: /api/v1
+    description: Relative (same-origin / proxy)
+security:
+  - sanctum: []
+tags:
+  - name: System
+  - name: Auth
+  - name: Profile
+  - name: Resumes
+  - name: Career Score
+  - name: Public
+  - name: Referrals
+paths:
+  /health:
+    get:
+      tags: [System]
+      security: []
+      operationId: getHealth
+      summary: Liveness / envelope smoke
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          status: { type: string, example: ok }
+                          service: { type: string, example: careerlens-api }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: authRegister
+      summary: Register user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: Registered
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/AuthPayload' }
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: authLogin
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/AuthPayload' }
+        '401':
+          $ref: '#/components/responses/Error'
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: authLogout
+      summary: Logout (revoke current token)
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessNull'
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      operationId: authMe
+      summary: Current user
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/User' }
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: authRefresh
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Tokens
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/TokenPair' }
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: authForgotPassword
+      summary: Request password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: authResetPassword
+      summary: Reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResetPasswordRequest' }
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /profile:
+    get:
+      tags: [Profile]
+      operationId: getProfile
+      summary: Get canonical Career Profile
+      responses:
+        '200':
+          description: Career Profile
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/CareerProfile' }
+        '401':
+          $ref: '#/components/responses/Error'
+    patch:
+      tags: [Profile]
+      operationId: updateProfile
+      summary: Update Career Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CareerProfileUpdateRequest' }
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/CareerProfile' }
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /resumes:
+    get:
+      tags: [Resumes]
+      operationId: listResumes
+      summary: List resumes for current user
+      responses:
+        '200':
+          description: Resume list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Resume' }
+
+  /resumes/upload-url:
+    post:
+      tags: [Resumes]
+      operationId: createResumeUploadUrl
+      summary: Get presigned upload URL (preferred upload path)
+      responses:
+        '200':
+          description: Upload instructions
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/ResumeUploadUrl' }
+
+  /resumes/{id}/confirm:
+    post:
+      tags: [Resumes]
+      operationId: confirmResumeUpload
+      summary: Confirm upload completed; enqueue processing
+      parameters:
+        - $ref: '#/components/parameters/ResumeId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Resume accepted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Resume' }
+        '409':
+          $ref: '#/components/responses/Error'
+
+  /resumes/{id}:
+    get:
+      tags: [Resumes]
+      operationId: getResume
+      summary: Get resume
+      parameters:
+        - $ref: '#/components/parameters/ResumeId'
+      responses:
+        '200':
+          description: Resume
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Resume' }
+        '404':
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Resumes]
+      operationId: deleteResume
+      summary: Delete resume
+      parameters:
+        - $ref: '#/components/parameters/ResumeId'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessNull'
+        '404':
+          $ref: '#/components/responses/Error'
+
+  /resumes/{id}/status:
+    get:
+      tags: [Resumes]
+      operationId: getResumeStatus
+      summary: Processing status
+      parameters:
+        - $ref: '#/components/parameters/ResumeId'
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/ResumeStatusPayload' }
+
+  /resumes/{id}/analysis:
+    get:
+      tags: [Resumes]
+      operationId: getResumeAnalysis
+      summary: Latest resume analysis
+      parameters:
+        - $ref: '#/components/parameters/ResumeId'
+      responses:
+        '200':
+          description: Analysis
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/ResumeAnalysis' }
+        '409':
+          $ref: '#/components/responses/Error'
+
+  /resumes/{id}/primary:
+    post:
+      tags: [Resumes]
+      operationId: setPrimaryResume
+      summary: Mark resume as primary evidence
+      parameters:
+        - $ref: '#/components/parameters/ResumeId'
+      responses:
+        '200':
+          description: Updated resume
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Resume' }
+
+  /scores:
+    get:
+      tags: [Career Score]
+      operationId: listScores
+      summary: List Career Scores for current user
+      responses:
+        '200':
+          description: Scores
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/CareerScore' }
+
+  /scores/generate:
+    post:
+      tags: [Career Score]
+      operationId: generateScore
+      summary: Generate Career Score for career_profile (optional evidence resume)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CareerScoreRequest' }
+      responses:
+        '200':
+          description: Score (sync for R1a; may become 202 later)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/CareerScore' }
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /scores/{id}:
+    get:
+      tags: [Career Score]
+      operationId: getScore
+      summary: Get Career Score by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Score
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/CareerScore' }
+        '404':
+          $ref: '#/components/responses/Error'
+
+  /scores/{id}/share:
+    post:
+      tags: [Career Score]
+      operationId: createScoreShare
+      summary: Create / refresh public share token for score
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '201':
+          description: Share created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/ScoreShare' }
+
+  /public/scores/{token}:
+    get:
+      tags: [Public]
+      security: []
+      operationId: getPublicScore
+      summary: Public Career Score card
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Public score payload
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/PublicScore' }
+        '404':
+          $ref: '#/components/responses/Error'
+
+  /public/profiles/{slug}:
+    get:
+      tags: [Public]
+      security: []
+      operationId: getPublicProfile
+      summary: Public Career Profile (privacy-respecting fields)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Public profile
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/CareerProfile' }
+        '404':
+          $ref: '#/components/responses/Error'
+
+  /referrals/code:
+    get:
+      tags: [Referrals]
+      operationId: getReferralCode
+      summary: Get current user referral code
+      responses:
+        '200':
+          description: Code
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          code: { type: string }
+
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+
+  parameters:
+    ResumeId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, maxLength: 255 }
+
+  responses:
+    Error:
+      description: Error envelope
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    SuccessNull:
+      description: Success with null data
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/SuccessEnvelope'
+              - type: object
+                properties:
+                  data: { nullable: true }
+    SuccessMessage:
+      description: Success with message object
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/SuccessEnvelope'
+              - type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message: { type: string }
+
+  schemas:
+    SuccessEnvelope:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: {}
+        meta:
+          type: object
+          additionalProperties: true
+
+    ErrorEnvelope:
+      type: object
+      required: [success, error]
+      properties:
+        success: { type: boolean, enum: [false] }
+        error: { $ref: '#/components/schemas/ApiError' }
+
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: VALIDATION_ERROR }
+        message: { type: string }
+        details:
+          type: object
+          additionalProperties: true
+
+    User:
+      type: object
+      required: [id, email, displayName, role, isEmailVerified, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        avatarUrl: { type: string, nullable: true }
+        role: { type: string, enum: [free, pro, enterprise] }
+        isEmailVerified: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AuthPayload:
+      type: object
+      required: [user, accessToken, refreshToken, expiresAt]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, expiresAt]
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        displayName: { type: string, maxLength: 120 }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+
+    ResetPasswordRequest:
+      type: object
+      required: [email, token, password]
+      properties:
+        email: { type: string, format: email }
+        token: { type: string }
+        password: { type: string, format: password, minLength: 8 }
+
+    CareerProfile:
+      type: object
+      description: Canonical career identity (resume is evidence only)
+      required: [id, userId, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        headline: { type: string, nullable: true }
+        summary: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        linkedinUrl: { type: string, nullable: true }
+        githubUrl: { type: string, nullable: true }
+        portfolioUrl: { type: string, nullable: true }
+        yearsOfExperience: { type: number, nullable: true }
+        currentSalary: { type: number, nullable: true }
+        desiredSalary: { type: number, nullable: true }
+        isOpenToWork: { type: boolean }
+        isProfilePublic: { type: boolean }
+        publicSlug: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CareerProfileUpdateRequest:
+      type: object
+      properties:
+        headline: { type: string }
+        summary: { type: string }
+        location: { type: string }
+        linkedinUrl: { type: string }
+        githubUrl: { type: string }
+        portfolioUrl: { type: string }
+        yearsOfExperience: { type: number, minimum: 0 }
+        currentSalary: { type: number }
+        desiredSalary: { type: number }
+        isOpenToWork: { type: boolean }
+        isProfilePublic: { type: boolean }
+        publicSlug: { type: string }
+
+    ResumeStatus:
+      type: string
+      enum: [pending, processing, analyzed, failed]
+
+    Resume:
+      type: object
+      required: [id, userId, fileName, status, isPrimary, uploadedAt]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        fileName: { type: string }
+        fileSize: { type: integer }
+        mimeType: { type: string }
+        storageKey: { type: string }
+        status: { $ref: '#/components/schemas/ResumeStatus' }
+        pageCount: { type: integer, nullable: true }
+        wordCount: { type: integer, nullable: true }
+        analysis: { $ref: '#/components/schemas/ResumeAnalysis' }
+        isPrimary: { type: boolean }
+        uploadedAt: { type: string, format: date-time }
+        processedAt: { type: string, format: date-time, nullable: true }
+
+    ResumeUploadUrl:
+      type: object
+      required: [uploadUrl, resumeId, expiresAt]
+      properties:
+        uploadUrl: { type: string, format: uri }
+        resumeId: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    ResumeStatusPayload:
+      type: object
+      required: [id, status, progress]
+      properties:
+        id: { type: string }
+        status: { $ref: '#/components/schemas/ResumeStatus' }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+
+    ResumeAnalysis:
+      type: object
+      nullable: true
+      properties:
+        id: { type: string }
+        resumeId: { type: string }
+        atsScore: { type: number }
+        readabilityScore: { type: number }
+        keywordDensity: { type: number }
+        formattingIssues:
+          type: array
+          items: { type: string }
+        contentSuggestions:
+          type: array
+          items: { type: string }
+        missingKeywords:
+          type: array
+          items: { type: string }
+        analyzedAt: { type: string, format: date-time }
+
+    CareerScoreRequest:
+      type: object
+      description: Score is owned by career_profile; resume is optional evidence
+      properties:
+        careerProfileId: { type: string }
+        evidenceResumeId: { type: string, nullable: true }
+        targetRoleId: { type: string, nullable: true }
+
+    CareerScore:
+      type: object
+      required: [id, overallScore, grade, generatedAt]
+      properties:
+        id: { type: string }
+        careerProfileId: { type: string }
+        evidenceResumeId: { type: string, nullable: true }
+        overallScore: { type: number }
+        percentile: { type: number }
+        grade: { type: string }
+        marketReadiness: { type: string }
+        shareToken: { type: string, nullable: true }
+        isPublic: { type: boolean }
+        generatedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time, nullable: true }
+
+    ScoreShare:
+      type: object
+      required: [token, url]
+      properties:
+        token: { type: string }
+        url: { type: string, format: uri }
+
+    PublicScore:
+      type: object
+      required: [overallScore, grade, generatedAt]
+      properties:
+        overallScore: { type: number }
+        percentile: { type: number }
+        grade: { type: string }
+        marketReadiness: { type: string }
+        ownerDisplayName: { type: string, nullable: true }
+        ownerAvatarUrl: { type: string, nullable: true }
+        generatedAt: { type: string, format: date-time }

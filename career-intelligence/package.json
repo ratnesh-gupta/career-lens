@@ -10,6 +10,7 @@
     "test:e2e": "pnpm --filter @careerlens/web test:e2e",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\" --ignore-path .gitignore",
     "typecheck": "pnpm -r typecheck",
+    "openapi:generate": "pnpm --filter @careerlens/shared-types openapi:generate",
     "clean": "pnpm -r --parallel exec rm -rf dist node_modules .turbo"
   },
   "devDependencies": {
