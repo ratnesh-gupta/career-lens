@@ -2,6 +2,7 @@
 
 use App\Modules\CareerProfile\Http\Controllers\ProfileController;
 use App\Modules\CareerScore\Http\Controllers\ScoreController;
+use App\Modules\Resume\Http\Controllers\ResumeController;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -22,7 +23,6 @@ Route::prefix('v1')->group(function () {
         return ApiResponse::success(['ok' => true]);
     });
 
-    // Public score card — no auth
     Route::get('/public/scores/{token}', [ScoreController::class, 'publicShow']);
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -33,5 +33,16 @@ Route::prefix('v1')->group(function () {
         Route::post('/scores/generate', [ScoreController::class, 'store']);
         Route::get('/scores/{id}', [ScoreController::class, 'show']);
         Route::post('/scores/{id}/share', [ScoreController::class, 'share']);
+
+        Route::get('/resumes', [ResumeController::class, 'index']);
+        Route::post('/resumes/upload-url', [ResumeController::class, 'createUploadUrl']);
+        Route::post('/resumes/{id}/upload-binary', [ResumeController::class, 'uploadBinary']);
+        Route::post('/resumes/{id}/confirm', [ResumeController::class, 'confirm']);
+        Route::get('/resumes/{id}', [ResumeController::class, 'show']);
+        Route::get('/resumes/{id}/status', [ResumeController::class, 'status']);
+        Route::get('/resumes/{id}/analysis', [ResumeController::class, 'analysis']);
+        Route::delete('/resumes/{id}', [ResumeController::class, 'destroy']);
+        Route::post('/resumes/{id}/primary', [ResumeController::class, 'setPrimary']);
+        Route::post('/resumes/{id}/reprocess', [ResumeController::class, 'reprocess']);
     });
 });
