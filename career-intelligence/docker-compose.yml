@@ -25,10 +25,10 @@ services:
       timeout: 3s
       retries: 10
 
-  # Optional local S3-compatible store for resume objects
+  # S3-compatible private object store for resumes
   minio:
     image: quay.io/minio/minio:latest
-    command: server /data --console-address ":5101"
+    command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: careerlens
       MINIO_ROOT_PASSWORD: careerlenssecret
@@ -37,7 +37,38 @@ services:
       - "5101:9001"
     volumes:
       - careerlens_minio:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Create default private bucket on first boot
+  minio-init:
+    image: quay.io/minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "
+      sleep 3;
+      mc alias set local http://minio:9000 careerlens careerlenssecret;
+      mc mb --ignore-existing local/careerlens-resumes;
+      mc anonymous set none local/careerlens-resumes;
+      exit 0;
+      "
+
+  # Optional ClamAV daemon for malware scanning
+  clamav:
+    image: clamav/clamav:stable
+    ports:
+      - "3310:3310"
+    volumes:
+      - careerlens_clamav:/var/lib/clamav
+    profiles:
+      - malware
 
 volumes:
   careerlens_pg:
   careerlens_minio:
+  careerlens_clamav:

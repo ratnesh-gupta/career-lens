@@ -9,10 +9,10 @@ use App\Modules\Resume\Actions\ConfirmResumeUpload;
 use App\Modules\Resume\Actions\CreateResumeUpload;
 use App\Modules\Resume\Http\Resources\ResumeResource;
 use App\Modules\Resume\Jobs\ProcessResumeJob;
+use App\Modules\Resume\Storage\ResumeObjectStore;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -49,11 +49,20 @@ class ResumeController extends Controller
             'uploadUrl' => $result['uploadUrl'],
             'resumeId' => $result['resume']->uuid,
             'expiresAt' => $result['expiresAt']->toIso8601String(),
+            'headers' => $result['headers'],
+            'storageDriver' => $result['storageDriver'],
         ]);
     }
 
-    public function uploadBinary(Request $request, string $id): JsonResponse
-    {
+    /**
+     * Local/dev binary intake when presigned S3 is unavailable.
+     * Production clients should PUT directly to the presigned uploadUrl.
+     */
+    public function uploadBinary(
+        Request $request,
+        string $id,
+        ResumeObjectStore $store,
+    ): JsonResponse {
         $resume = $this->ownedResume($request, $id);
 
         $request->validate([
@@ -61,9 +70,8 @@ class ResumeController extends Controller
         ]);
 
         $file = $request->file('file');
-        $disk = config('resumes.disk', 'local');
-
-        Storage::disk($disk)->put($resume->storage_path, file_get_contents($file->getRealPath()));
+        $contents = file_get_contents($file->getRealPath());
+        $store->put($resume, $contents === false ? '' : $contents);
 
         $resume->file_size = $file->getSize();
         $resume->mime_type = $file->getMimeType() ?: 'application/pdf';
@@ -85,7 +93,15 @@ class ResumeController extends Controller
         try {
             $resume = $confirm($resume);
         } catch (RuntimeException $e) {
-            return ApiResponse::error('UPLOAD_INCOMPLETE', $e->getMessage(), [], 409);
+            $code = str_contains(strtolower($e->getMessage()), 'malware')
+                ? 'MALWARE_DETECTED'
+                : (str_contains(strtolower($e->getMessage()), 'pdf')
+                    ? 'INVALID_FILE'
+                    : 'UPLOAD_INCOMPLETE');
+
+            $status = in_array($code, ['MALWARE_DETECTED', 'INVALID_FILE'], true) ? 422 : 409;
+
+            return ApiResponse::error($code, $e->getMessage(), [], $status);
         }
 
         $resume->load(['analysis', 'user', 'careerProfile']);
@@ -146,9 +162,13 @@ class ResumeController extends Controller
         ]);
     }
 
-    public function destroy(Request $request, string $id): JsonResponse
-    {
+    public function destroy(
+        Request $request,
+        string $id,
+        ResumeObjectStore $store,
+    ): JsonResponse {
         $resume = $this->ownedResume($request, $id);
+        $store->delete($resume);
         $resume->delete();
 
         return ApiResponse::success(null);

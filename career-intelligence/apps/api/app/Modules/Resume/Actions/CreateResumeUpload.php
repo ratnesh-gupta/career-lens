@@ -5,12 +5,23 @@ namespace App\Modules\Resume\Actions;
 use App\Models\CareerProfile;
 use App\Models\Resume;
 use App\Models\User;
+use App\Modules\Resume\Storage\ResumeObjectStore;
 use Illuminate\Support\Str;
 
 final class CreateResumeUpload
 {
+    public function __construct(
+        private readonly ResumeObjectStore $store,
+    ) {}
+
     /**
-     * @return array{resume: Resume, uploadUrl: string, expiresAt: \Illuminate\Support\Carbon}
+     * @return array{
+     *     resume: Resume,
+     *     uploadUrl: string,
+     *     expiresAt: \Illuminate\Support\Carbon,
+     *     headers: array<string, string>,
+     *     storageDriver: string
+     * }
      */
     public function __invoke(User $user, CareerProfile $profile, ?string $fileName = null): array
     {
@@ -20,7 +31,8 @@ final class CreateResumeUpload
         }
 
         $uuid = (string) Str::uuid();
-        $path = 'resumes/'.$user->uuid.'/'.$uuid.'/'.$fileName;
+        $userUuid = $user->uuid ?: (string) $user->id;
+        $path = $this->store->buildPath($userUuid, $uuid, $fileName);
 
         $resume = Resume::query()->create([
             'uuid' => $uuid,
@@ -37,14 +49,14 @@ final class CreateResumeUpload
 
         $ttl = (int) config('resumes.upload_url_ttl_minutes', 15);
         $expiresAt = now()->addMinutes($ttl);
-
-        // Local/dev: client PUTs to our confirm-adjacent upload endpoint (not real S3 until #8)
-        $uploadUrl = url('/api/v1/resumes/'.$resume->uuid.'/upload-binary');
+        $signed = $this->store->temporaryUploadUrl($resume, $expiresAt);
 
         return [
             'resume' => $resume,
-            'uploadUrl' => $uploadUrl,
+            'uploadUrl' => $signed['url'],
             'expiresAt' => $expiresAt,
+            'headers' => $signed['headers'],
+            'storageDriver' => $signed['driver'],
         ];
     }
 }
