@@ -49,6 +49,11 @@ export const ROUTES = {
   SETTINGS_PRIVACY: "/settings/privacy",
   SETTINGS_ACCOUNT: "/settings/account",
 
+  // Admin (super_admin)
+  ADMIN: "/admin",
+  ADMIN_RESUMES: "/admin/resumes",
+  ADMIN_USERS: "/admin/users",
+
   // R1b placeholders
   TARGET_ROLE: "/target-role",
   OPTIMIZATION: "/optimization",

@@ -12,12 +12,20 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'uuid'])]
+#[Fillable(['name', 'email', 'password', 'uuid', 'role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    public const ROLE_FREE = 'free';
+
+    public const ROLE_PRO = 'pro';
+
+    public const ROLE_ENTERPRISE = 'enterprise';
+
+    public const ROLE_SUPER_ADMIN = 'super_admin';
 
     protected function casts(): array
     {
@@ -33,14 +41,19 @@ class User extends Authenticatable
             if (empty($user->uuid)) {
                 $user->uuid = (string) Str::uuid();
             }
+            if (empty($user->role)) {
+                $user->role = self::ROLE_FREE;
+            }
         });
     }
 
-    /**
-     * Canonical career identity — one profile per user.
-     */
     public function careerProfile(): HasOne
     {
         return $this->hasOne(CareerProfile::class);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPER_ADMIN;
     }
 }

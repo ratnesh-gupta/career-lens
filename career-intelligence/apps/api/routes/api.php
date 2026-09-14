@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Admin\Http\Controllers\AdminDashboardController;
+use App\Modules\Admin\Http\Controllers\AdminResumeController;
+use App\Modules\Admin\Http\Controllers\AdminUserController;
 use App\Modules\Auth\Http\Controllers\AuthController;
 use App\Modules\CareerProfile\Http\Controllers\ProfileController;
 use App\Modules\CareerProfile\Http\Controllers\PublicProfileController;
@@ -25,14 +28,12 @@ Route::prefix('v1')->group(function () {
         return ApiResponse::success(['ok' => true]);
     });
 
-    // Auth (public)
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
     Route::post('/auth/verify-email', [AuthController::class, 'verifyEmail']);
 
-    // Public surfaces
     Route::get('/public/scores/{token}', [ScoreController::class, 'publicShow']);
     Route::get('/public/profiles/{slug}', [PublicProfileController::class, 'show']);
 
@@ -59,5 +60,13 @@ Route::prefix('v1')->group(function () {
         Route::delete('/resumes/{id}', [ResumeController::class, 'destroy']);
         Route::post('/resumes/{id}/primary', [ResumeController::class, 'setPrimary']);
         Route::post('/resumes/{id}/reprocess', [ResumeController::class, 'reprocess']);
+
+        // Super-admin ops
+        Route::middleware('super_admin')->prefix('admin')->group(function () {
+            Route::get('/overview', [AdminDashboardController::class, 'overview']);
+            Route::get('/resumes', [AdminResumeController::class, 'index']);
+            Route::post('/resumes/{id}/reprocess', [AdminResumeController::class, 'reprocess']);
+            Route::get('/users', [AdminUserController::class, 'index']);
+        });
     });
 });

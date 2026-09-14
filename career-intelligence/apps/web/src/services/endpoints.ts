@@ -32,7 +32,13 @@ export const EP = {
   SCORE_LIST: "/scores",
   SCORE_SHARE: (id: string) => `/scores/${id}/share`,
 
-  // Public (no auth) — match OpenAPI / Laravel routes
+  // Public (no auth)
   SCORE_PUBLIC: (token: string) => `/public/scores/${token}`,
   PROFILE_PUBLIC: (slug: string) => `/public/profiles/${slug}`,
+
+  // Admin (super_admin)
+  ADMIN_OVERVIEW: "/admin/overview",
+  ADMIN_RESUMES: "/admin/resumes",
+  ADMIN_RESUME_REPROCESS: (id: string) => `/admin/resumes/${id}/reprocess`,
+  ADMIN_USERS: "/admin/users",
 } as const;

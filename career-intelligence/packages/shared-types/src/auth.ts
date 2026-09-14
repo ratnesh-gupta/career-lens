@@ -1,6 +1,6 @@
 import type { UUID, Timestamp } from "./common.js";
 
-export type UserRole = "free" | "pro" | "enterprise";
+export type UserRole = "free" | "pro" | "enterprise" | "super_admin";
 
 export interface User {
   id: UUID;

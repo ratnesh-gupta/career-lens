@@ -6,19 +6,14 @@
 
 | # | Item | Status |
 |---|------|--------|
-| **1–9** | Scaffold through public profile | ✅ |
-| **10** | FE → real API; shrink MSW | ✅ |
-| **11** | Super-admin Reprocess + admin | ⬜ Next |
-| **12** | Staging CI → deploy | ⬜ |
+| **1–10** | Scaffold through FE real API | ✅ |
+| **11** | Super-admin Reprocess + admin | ✅ |
+| **12** | Staging CI → deploy | ⬜ Next |
 
-## #10 notes
+## #11 notes
 
-- Sanctum auth: register / login / me / logout / refresh
-- MSW **off by default** (`VITE_ENABLE_MSW=false`)
-- CORS for SPA + Bearer
-- Token key: `careerlens_access_token`
-- Guide: [frontend-real-api.md](./frontend-real-api.md)
-
-## Dev storage
-
-Local object storage = **MinIO** (not AWS).
+- `users.role` includes `super_admin`
+- Middleware `super_admin` on `/api/v1/admin/*`
+- Admin: overview, resume list + **reprocess**, user list
+- FE: `/admin`, `/admin/resumes`, `/admin/users` + `RequireAdmin`
+- Promote: `php artisan admin:promote you@example.com`

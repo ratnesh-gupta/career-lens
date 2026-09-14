@@ -1,7 +1,7 @@
 import { lazy, Suspense, type ComponentType, type ReactElement } from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 
-import { RequireAuth, RequireGuest, RequireEntitlement } from "@/components/auth";
+import { RequireAdmin, RequireAuth, RequireGuest, RequireEntitlement } from "@/components/auth";
 import { ComingSoonPage } from "@/components/feedback/coming-soon-page";
 import { PlaceholderPage } from "@/components/feedback/placeholder-page";
 import { AppShell } from "@/components/layout/app-shell";
@@ -41,6 +41,16 @@ function ProtectedLayout() {
   return (
     <RequireAuth>
       <AppShell />
+    </RequireAuth>
+  );
+}
+
+function AdminLayout() {
+  return (
+    <RequireAuth>
+      <RequireAdmin>
+        <AppShell />
+      </RequireAdmin>
     </RequireAuth>
   );
 }
@@ -235,6 +245,24 @@ export const router = createBrowserRouter([
             <ComingSoonPage title="Billing" />
           </RequireEntitlement>
         ),
+      },
+    ],
+  },
+
+  {
+    element: <AdminLayout />,
+    children: [
+      {
+        path: ROUTES.ADMIN,
+        element: lazyElement(() => import("@/modules/admin/pages/AdminOverviewPage"), "Admin"),
+      },
+      {
+        path: ROUTES.ADMIN_RESUMES,
+        element: lazyElement(() => import("@/modules/admin/pages/AdminResumesPage"), "Admin resumes"),
+      },
+      {
+        path: ROUTES.ADMIN_USERS,
+        element: lazyElement(() => import("@/modules/admin/pages/AdminUsersPage"), "Admin users"),
       },
     ],
   },

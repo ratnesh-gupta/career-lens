@@ -24,7 +24,7 @@ class UserResource extends JsonResource
             'email' => $user->email,
             'displayName' => $user->name,
             'avatarUrl' => null,
-            'role' => 'free',
+            'role' => $user->role ?: User::ROLE_FREE,
             'isEmailVerified' => $user->email_verified_at !== null,
             'createdAt' => $user->created_at?->toIso8601String(),
             'updatedAt' => $user->updated_at?->toIso8601String(),

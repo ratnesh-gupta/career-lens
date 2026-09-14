@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureSuperAdmin;
 use App\Support\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -19,7 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // API-only: never redirect guests to a named "login" web route
+        $middleware->alias([
+            'super_admin' => EnsureSuperAdmin::class,
+        ]);
+
         $middleware->redirectGuestsTo(function (Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return null;
@@ -59,7 +63,6 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        // Guard against default auth middleware calling route('login') in API context
         $exceptions->render(function (RouteNotFoundException $e, Request $request) {
             if (! $request->is('api/*') && ! $request->expectsJson()) {
                 return null;
