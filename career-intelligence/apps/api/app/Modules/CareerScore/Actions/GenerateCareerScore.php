@@ -4,11 +4,13 @@ namespace App\Modules\CareerScore\Actions;
 
 use App\Models\CareerProfile;
 use App\Models\CareerScore;
+use App\Models\Resume;
+use App\Modules\CareerScore\Engine\DeterministicScoreEngine;
 
 final class GenerateCareerScore
 {
     public function __construct(
-        private readonly ComputeStubCareerScore $compute,
+        private readonly DeterministicScoreEngine $engine,
     ) {}
 
     public function __invoke(
@@ -16,7 +18,20 @@ final class GenerateCareerScore
         ?string $evidenceResumeUuid = null,
         ?string $targetRoleUuid = null,
     ): CareerScore {
-        $computed = ($this->compute)($profile, $evidenceResumeUuid);
+        $resume = null;
+        $analysis = null;
+
+        if ($evidenceResumeUuid) {
+            $resume = Resume::query()
+                ->where('uuid', $evidenceResumeUuid)
+                ->where('career_profile_id', $profile->id)
+                ->with('analysis')
+                ->first();
+
+            $analysis = $resume?->analysis;
+        }
+
+        $computed = $this->engine->compute($profile, $resume, $analysis);
 
         return CareerScore::query()->create([
             'career_profile_id' => $profile->id,
@@ -32,6 +47,11 @@ final class GenerateCareerScore
             'meta_json' => [
                 'owned_by' => 'career_profile',
                 'career_profile_uuid' => $profile->uuid,
+                'strengths' => $computed['strengths'],
+                'weaknesses' => $computed['weaknesses'],
+                'recommendations' => $computed['recommendations'],
+                'industry_benchmark' => $computed['industry_benchmark'],
+                'role_match' => $computed['role_match'],
             ],
             'is_public' => false,
             'share_token' => null,

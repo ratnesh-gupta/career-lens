@@ -22,12 +22,13 @@ class CareerScoreResource extends JsonResource
             ? $score->careerProfile
             : $score->careerProfile()->first();
 
+        $meta = $score->meta_json ?? [];
+
         return [
             'id' => $score->uuid,
             'careerProfileId' => $profile?->uuid,
             'evidenceResumeId' => $score->evidence_resume_uuid,
             'targetRoleId' => $score->target_role_uuid,
-            // Legacy FE field — do not treat as ownership
             'userId' => $profile?->user?->uuid,
             'resumeId' => $score->evidence_resume_uuid,
             'overallScore' => $score->score,
@@ -37,9 +38,11 @@ class CareerScoreResource extends JsonResource
             'scoreVersion' => $score->score_version,
             'status' => $score->status,
             'breakdown' => $score->breakdown_json ?? [],
-            'strengths' => [],
-            'weaknesses' => [],
-            'recommendations' => [],
+            'strengths' => $meta['strengths'] ?? [],
+            'weaknesses' => $meta['weaknesses'] ?? [],
+            'recommendations' => $meta['recommendations'] ?? [],
+            'industryBenchmark' => $meta['industry_benchmark'] ?? null,
+            'roleMatch' => $meta['role_match'] ?? null,
             'shareToken' => $score->share_token,
             'isPublic' => (bool) $score->is_public,
             'generatedAt' => $score->generated_at?->toIso8601String(),

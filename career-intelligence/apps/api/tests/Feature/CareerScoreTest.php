@@ -15,6 +15,7 @@ test('generate score is owned by career profile not resume', function () {
         'bio' => 'Builds products.',
         'experience_years' => 5,
         'industry' => 'Technology',
+        'career_level' => 'senior',
     ]);
     Sanctum::actingAs($user);
 
@@ -26,14 +27,18 @@ test('generate score is owned by career profile not resume', function () {
     $response->assertCreated()
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.careerProfileId', $profile->uuid)
-        ->assertJsonPath('data.evidenceResumeId', null);
+        ->assertJsonPath('data.evidenceResumeId', null)
+        ->assertJsonPath('data.scoreVersion', 'r1a-1.0');
 
     expect($response->json('data.overallScore'))->toBeInt()
-        ->and($response->json('data.scoreVersion'))->toBe('r1a-stub-1.0');
+        ->and($response->json('data.breakdown'))->toBeArray()
+        ->and($response->json('data.strengths'))->toBeArray()
+        ->and($response->json('data.recommendations'))->toBeArray();
 
     $this->assertDatabaseHas('career_scores', [
         'career_profile_id' => $profile->id,
         'uuid' => $response->json('data.id'),
+        'score_version' => 'r1a-1.0',
     ]);
 });
 
@@ -95,4 +100,24 @@ test('cannot generate score for another users profile id', function () {
 
     $response->assertForbidden()
         ->assertJsonPath('error.code', 'FORBIDDEN');
+});
+
+test('generate is deterministic for identical profile', function () {
+    $user = User::factory()->create();
+    $profile = CareerProfile::factory()->for($user)->create([
+        'headline' => 'Fixed Headline',
+        'bio' => 'Fixed bio content for determinism.',
+        'experience_years' => 4,
+        'industry' => 'Technology',
+        'career_level' => 'mid',
+        'display_name' => 'Fixed Name',
+        'location' => 'Remote',
+        'current_job_title' => 'Engineer',
+    ]);
+    Sanctum::actingAs($user);
+
+    $first = $this->postJson('/api/v1/scores/generate', [])->json('data.overallScore');
+    $second = $this->postJson('/api/v1/scores/generate', [])->json('data.overallScore');
+
+    expect($first)->toBe($second);
 });

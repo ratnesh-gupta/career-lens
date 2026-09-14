@@ -2,29 +2,40 @@
 
 namespace App\Modules\CareerScore\Support;
 
+use InvalidArgumentException;
+
 /**
- * Versioned category weights (baseline). Full deterministic engine is sequence #7;
- * this stub version drives R1a ownership + API shape.
+ * Versioned category weights for the deterministic Career Score engine.
  */
 final class ScoreVersion
 {
-    public const CURRENT = 'r1a-stub-1.0';
+    public static function current(): string
+    {
+        return (string) config('score.current_version', 'r1a-1.0');
+    }
 
     /**
-     * @return array<string, float> category => weight (sum = 1.0)
+     * @return array<string, float>
      */
-    public static function weights(string $version = self::CURRENT): array
+    public static function weights(?string $version = null): array
     {
-        return match ($version) {
-            self::CURRENT => [
-                'profile_completeness' => 0.25,
-                'experience_signal' => 0.20,
-                'skills_signal' => 0.20,
-                'positioning' => 0.15,
-                'market_alignment' => 0.10,
-                'evidence_resume' => 0.10,
-            ],
-            default => self::weights(self::CURRENT),
-        };
+        $version ??= self::current();
+        $weights = config("score.versions.{$version}.weights");
+
+        if (! is_array($weights) || $weights === []) {
+            throw new InvalidArgumentException("Unknown score version [{$version}].");
+        }
+
+        return $weights;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function labels(?string $version = null): array
+    {
+        $version ??= self::current();
+
+        return config("score.versions.{$version}.labels", []);
     }
 }
