@@ -1,7 +1,7 @@
 import { delay, http } from "msw";
 
 import { fail, ok } from "../envelope";
-import { mockProfile } from "../fixtures";
+import { mockCareerProfile } from "../fixtures";
 
 const BASE = "*/api/v1";
 
@@ -13,9 +13,9 @@ export const publicHandlers = [
       return fail("NOT_FOUND", "Profile not found.", { status: 404 });
     }
     return ok({
-      ...mockProfile,
-      slug,
-      isPublic: true,
+      ...mockCareerProfile,
+      publicSlug: slug,
+      isProfilePublic: true,
     });
   }),
 ];
