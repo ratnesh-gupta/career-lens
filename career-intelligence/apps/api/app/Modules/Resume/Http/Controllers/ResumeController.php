@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ResumeController extends Controller
 {
@@ -51,9 +52,6 @@ class ResumeController extends Controller
         ]);
     }
 
-    /**
-     * Local/dev binary intake (stands in for S3 PUT until #8).
-     */
     public function uploadBinary(Request $request, string $id): JsonResponse
     {
         $resume = $this->ownedResume($request, $id);
@@ -191,14 +189,7 @@ class ResumeController extends Controller
         $resume = Resume::query()->where('uuid', $id)->first();
 
         if ($resume === null || $resume->user_id !== $request->user()->id) {
-            abort(response()->json([
-                'success' => false,
-                'error' => [
-                    'code' => 'NOT_FOUND',
-                    'message' => 'Resume not found.',
-                    'details' => (object) [],
-                ],
-            ], 404));
+            throw new NotFoundHttpException('Resume not found.');
         }
 
         return $resume;

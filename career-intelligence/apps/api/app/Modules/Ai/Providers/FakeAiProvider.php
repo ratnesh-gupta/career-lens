@@ -18,6 +18,7 @@ final class FakeAiProvider implements AiProvider
     {
         $words = str_word_count($sanitizedText);
         $lengthFactor = min(30, (int) floor($words / 20));
+        $displayName = $context['display_name'] ?? null;
 
         return [
             'provider' => $this->name(),
@@ -45,8 +46,8 @@ final class FakeAiProvider implements AiProvider
                     'boundingBox' => null,
                 ],
             ],
-            'suggested_headline' => $context['display_name'] ?? null
-                ? ($context['display_name'].' · Professional')
+            'suggested_headline' => is_string($displayName) && $displayName !== ''
+                ? $displayName.' · Professional'
                 : null,
         ];
     }
