@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureEntitlement;
 use App\Http\Middleware\EnsureSuperAdmin;
 use App\Support\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'super_admin' => EnsureSuperAdmin::class,
+            'entitlement' => EnsureEntitlement::class,
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request) {

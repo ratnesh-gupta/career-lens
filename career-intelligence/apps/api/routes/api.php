@@ -4,6 +4,7 @@ use App\Modules\Admin\Http\Controllers\AdminDashboardController;
 use App\Modules\Admin\Http\Controllers\AdminResumeController;
 use App\Modules\Admin\Http\Controllers\AdminUserController;
 use App\Modules\Auth\Http\Controllers\AuthController;
+use App\Modules\Billing\Http\Controllers\BillingController;
 use App\Modules\CareerProfile\Http\Controllers\ProfileController;
 use App\Modules\CareerProfile\Http\Controllers\PublicProfileController;
 use App\Modules\CareerScore\Http\Controllers\ScoreController;
@@ -75,6 +76,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/public/scores/{token}', [ScoreController::class, 'publicShow']);
     Route::get('/public/profiles/{slug}', [PublicProfileController::class, 'show']);
 
+    // R1b: public plan catalog (no auth)
+    Route::get('/billing/plans', [BillingController::class, 'plans']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -98,6 +102,9 @@ Route::prefix('v1')->group(function () {
         Route::delete('/resumes/{id}', [ResumeController::class, 'destroy']);
         Route::post('/resumes/{id}/primary', [ResumeController::class, 'setPrimary']);
         Route::post('/resumes/{id}/reprocess', [ResumeController::class, 'reprocess']);
+
+        // R1b: current plan + remaining limits
+        Route::get('/billing/entitlements', [BillingController::class, 'entitlements']);
 
         Route::middleware('super_admin')->prefix('admin')->group(function () {
             Route::get('/overview', [AdminDashboardController::class, 'overview']);
