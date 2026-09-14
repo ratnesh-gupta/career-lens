@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\CareerProfile\Http\Controllers\ProfileController;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -14,7 +15,6 @@ Route::prefix('v1')->group(function () {
 
     /**
      * Envelope probe — validation must return baseline error shape.
-     * Used by feature tests; safe to keep in local/dev.
      */
     Route::post('/_envelope/validate', function (Request $request) {
         $request->validate([
@@ -24,5 +24,9 @@ Route::prefix('v1')->group(function () {
         return ApiResponse::success(['ok' => true]);
     });
 
-    // auth, profile, resumes, scores ...
+    Route::middleware('auth:sanctum')->group(function () {
+        // Career Profile is the canonical identity — not the resume
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::patch('/profile', [ProfileController::class, 'update']);
+    });
 });
