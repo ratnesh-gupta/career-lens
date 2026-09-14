@@ -14,14 +14,13 @@ return new class extends Migration
             $table->uuid('uuid')->nullable()->unique()->after('id');
         });
 
-        // Backfill existing rows (sqlite / pgsql safe)
-        DB::table('users')->whereNull('uuid')->orderBy('id')->each(function ($user) {
-            DB::table('users')->where('id', $user->id)->update(['uuid' => (string) Str::uuid()]);
-        });
+        $users = DB::table('users')->whereNull('uuid')->orderBy('id')->get(['id']);
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->uuid('uuid')->nullable(false)->change();
-        });
+        foreach ($users as $user) {
+            DB::table('users')->where('id', $user->id)->update([
+                'uuid' => (string) Str::uuid(),
+            ]);
+        }
     }
 
     public function down(): void
