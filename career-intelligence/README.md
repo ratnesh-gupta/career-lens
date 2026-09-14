@@ -11,38 +11,34 @@ Upload a resume → get a **Career Score** → see strengths, gaps, and what to 
 | Area | Status |
 |------|--------|
 | **Frontend R1a** | ✅ `apps/web` |
-| **Backend R1a** | ✅ Laravel 13 modular API (`apps/api`) — auth, profile, resume, score, admin |
-| **Local infra** | ✅ Docker Compose (Postgres, Redis, MinIO) |
-| **CI / staging path** | ✅ GitHub Actions + deploy scripts |
-| **R1b** | Placeholders only |
+| **Backend R1a** | ✅ Laravel 13 (`apps/api`) |
+| **Local infra** | ✅ Docker Compose |
+| **CI / staging** | ✅ GitHub Actions |
+| **R1b** | Placeholders |
 
-**Local commands (dev + test):** → **[docs/local-development.md](./docs/local-development.md)**
+**Commands:** use the **Makefile** — see [docs/local-development.md](./docs/local-development.md)
 
 ---
 
-## Quick start (full stack)
+## Quick start
 
 ```bash
 cd career-intelligence
 
-# 1) Infra
-docker compose up -d postgres redis minio minio-init
+make setup          # one-time: JS + API env, key, migrate
+make compose-up     # Postgres Redis MinIO
 
-# 2) API
-cd apps/api
-cp .env.example .env
-composer install && php artisan key:generate && php artisan migrate
-php artisan serve          # :8000
-# other terminal: php artisan queue:work redis
-
-# 3) Web
-cd ../..
-pnpm install
-cp apps/web/.env.example apps/web/.env.local   # VITE_ENABLE_MSW=false
-pnpm dev                   # :5173
+# four terminals:
+make api-serve      # :8000
+make api-queue      # resume jobs
+make dev            # :5173
 ```
 
-Frontend-only (mocks): set `VITE_ENABLE_MSW=true` — see [docs/local-development.md](./docs/local-development.md).
+```bash
+make help           # all targets
+make health         # API smoke
+make ci             # tests before PR
+```
 
 ---
 
@@ -50,36 +46,19 @@ Frontend-only (mocks): set `VITE_ENABLE_MSW=true` — see [docs/local-developmen
 
 ```
 career-intelligence/
-├── apps/
-│   ├── web/                 # React + Vite + Tailwind + shadcn
-│   └── api/                 # Laravel 13 modular monolith
-├── packages/
-│   └── shared-types/
-├── docs/
-│   ├── local-development.md # ← commands & local runbook
-│   ├── implementation-sequence-r1a.md
-│   ├── frontend-real-api.md
-│   ├── deploy-staging.md
-│   └── backend/
-├── deploy/                  # Dockerfiles, staging compose, scripts
-├── docker-compose.yml
-└── Makefile
+├── Makefile                 # ← primary local interface
+├── apps/web                 # React + Vite
+├── apps/api                 # Laravel 13
+├── packages/shared-types
+├── docs/local-development.md
+├── deploy/
+└── docker-compose.yml
 ```
 
 ---
 
 ## Stack
 
-**Frontend:** React 18, TypeScript, Vite, Tailwind, shadcn/ui, TanStack Query, Zustand, RHF + Zod, MSW (opt-in), Vitest, Playwright, Sentry, PostHog.
+**Frontend:** React 18, TypeScript, Vite, Tailwind, shadcn/ui, TanStack Query, Zustand, RHF + Zod, MSW (opt-in), Vitest, Playwright.
 
-**Backend:** Laravel 13.x, PHP 8.3+, Sanctum, PostgreSQL, Redis, Horizon, S3/MinIO, Pest, Pint, Pennant.
-
----
-
-## Design system
-
-- Primary: indigo `#4f46e5`
-- Score tones: traffic-light
-- Surfaces: warm stone neutrals
-- Type: Inter + JetBrains Mono
-- Tokens: `apps/web/src/styles/tokens.css`
+**Backend:** Laravel 13, PHP 8.3+, Sanctum, PostgreSQL, Redis, Horizon, S3/MinIO, Pest, Pint.
