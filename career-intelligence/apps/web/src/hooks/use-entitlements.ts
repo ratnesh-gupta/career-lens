@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import type { EntitlementsSnapshot, FeatureCode } from "@careerlens/shared-types";
 
-import { fetchEntitlements } from "@/lib/api/billing";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { billingApi } from "@/modules/billing/services/billing-api";
 
 export function useEntitlements() {
   const { isAuthenticated } = useAuth();
 
   return useQuery({
     queryKey: ["billing", "entitlements"],
-    queryFn: fetchEntitlements,
+    queryFn: () => billingApi.entitlements(),
     enabled: isAuthenticated,
     staleTime: 60_000,
   });

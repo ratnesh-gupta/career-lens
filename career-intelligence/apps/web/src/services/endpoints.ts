@@ -36,6 +36,10 @@ export const EP = {
   SCORE_PUBLIC: (token: string) => `/public/scores/${token}`,
   PROFILE_PUBLIC: (slug: string) => `/public/profiles/${slug}`,
 
+  // Billing / entitlements (R1b)
+  BILLING_PLANS: "/billing/plans",
+  BILLING_ENTITLEMENTS: "/billing/entitlements",
+
   // Admin (super_admin)
   ADMIN_OVERVIEW: "/admin/overview",
   ADMIN_RESUMES: "/admin/resumes",
