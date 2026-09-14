@@ -14,27 +14,19 @@ class AdminUserController extends Controller
     {
         $q = User::query()->orderByDesc('created_at')->limit(100);
 
-        if ($search = $request->query('q')) {
-            $q->where(function ($builder) use ($search) {
-                $builder->where('email', 'ilike', '%'.$search.'%')
-                    ->orWhere('name', 'ilike', '%'.$search.'%');
+        $search = $request->query('q');
+        if (is_string($search) && $search !== '') {
+            $like = '%'.$search.'%';
+            $driver = config('database.default');
+            $op = $driver === 'pgsql' ? 'ilike' : 'like';
+
+            $q->where(function ($builder) use ($like, $op) {
+                $builder->where('email', $op, $like)
+                    ->orWhere('name', $op, $like);
             });
         }
 
-        // SQLite tests: ilike may not exist — fall back for non-pgsql
-        if (config('database.default') === 'sqlite' && $search) {
-            $q = User::query()
-                ->where(function ($builder) use ($search) {
-                    $builder->where('email', 'like', '%'.$search.'%')
-                        ->orWhere('name', 'like', '%'.$search.'%');
-                })
-                ->orderByDesc('created_at')
-                ->limit(100);
-        }
-
-        $users = $q->get();
-
-        $data = $users->map(fn (User $u) => [
+        $data = $q->get()->map(fn (User $u) => [
             'id' => $u->uuid,
             'email' => $u->email,
             'displayName' => $u->name,
