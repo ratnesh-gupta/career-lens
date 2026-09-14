@@ -3,7 +3,7 @@
 **Status:** Active  
 **Audience:** Engineering  
 **Aligned with:** `CAREERLENS-ENGINEERING-BASELINE-V1.1-FINAL`  
-**Last updated:** 2026-09-13
+**Last updated:** 2026-09-14
 
 Single ordered list that merges early risk resolution with the baseline-driven backend sequence.
 
@@ -11,35 +11,26 @@ Frontend R1a (Steps 1–6 under `apps/web`) is complete against MSW. This sequen
 
 ---
 
-## Current monorepo shape
+## Progress
 
-```text
-career-intelligence/
-├── apps/
-│   └── web/                 # React 18 + Vite (R1a UI done)
-├── packages/
-│   └── shared-types/        # Hand-written TS contracts (to be OpenAPI-generated)
-├── docs/
-│   ├── decisions/
-│   ├── implementation-sequence-r1a.md   # this file
-│   └── backend/
-│       └── laravel-setup-r1a.md         # detailed Laravel scaffold
-├── Makefile
-├── package.json             # pnpm workspace (JS only today)
-└── README.md
-```
-
-**Missing today (baseline target):**
-
-```text
-apps/api/                    # Laravel modular monolith
-infrastructure/docker/
-docker-compose.yml
-```
+| # | Item | Status |
+|---|------|--------|
+| **1** | Scaffold `apps/api` Laravel 13 modular monolith | ✅ Done (follow-ups: env + HasApiTokens applied with #2) |
+| **2** | Standardise API envelope on Laravel + MSW + FE client | ✅ Done (2026-09-14) |
+| **3** | OpenAPI + generated FE client | ⬜ Next |
+| **4** | Career Profile canonical domain | ⬜ |
+| **5** | Score on `career_profile_id` | ⬜ |
+| **6** | Resume pipeline + PII + AI stub | ⬜ |
+| **7** | Deterministic Career Score | ⬜ |
+| **8** | Malware scanning + real S3 | ⬜ |
+| **9** | Public profile parity | ⬜ |
+| **10** | FE → real API; shrink MSW | ⬜ |
+| **11** | Super-admin Reprocess + admin | ⬜ |
+| **12** | Staging CI → deploy | ⬜ |
 
 ---
 
-## Ordered work items
+## Ordered work items (detail)
 
 | # | Work item | Resolves |
 |---|-----------|----------|
@@ -56,22 +47,7 @@ docker-compose.yml
 | **11** | Super-admin Reprocess Resume + minimal admin screens | Risk: R1a ops |
 | **12** | Staging CI → deploy path (GitHub Actions → develop → staging → production) | Baseline CI/CD |
 
-### Checkpoints
-
-- **After #3** — Contract frozen; FE and API can parallelise.
-- **After #7** — Upload → score works on Compose locally.
-- **After #10** — MSW is not source of truth.
-- **After #12** — R1a matches baseline for first production target.
-
----
-
-## Item notes
-
-### 1 — Scaffold API
-
-See **[backend/laravel-setup-r1a.md](./backend/laravel-setup-r1a.md)** for exact commands, versions, and target folder layout under `apps/api`.
-
-### 2 — Envelope
+### Envelope contract (#2)
 
 Success:
 
@@ -79,7 +55,7 @@ Success:
 { "success": true, "data": {}, "meta": {} }
 ```
 
-Error:
+Error (HTTP status on the response):
 
 ```json
 {
@@ -92,49 +68,16 @@ Error:
 }
 ```
 
-Apply to Laravel API resources/exceptions, MSW handlers, and `apps/web` HTTP client parsing.
+Implementation:
 
-### 3 — OpenAPI
-
-- Source of truth: OpenAPI under `docs/api/` or exported from Laravel.
-- Generate client into `packages/shared-types` or `apps/web/src/generated`.
-- CI fails if generated output is dirty.
-
-### 4–5 — Profile & score ownership
-
-- Migrations and domain services use `career_profiles` as aggregate root.
-- Scores link `career_profile_id`; resume is `evidence_resume_id` only.
-- FE copy and routes should not imply “the resume is the user.”
-
-### 6–8 — Pipeline & storage
-
-- PDF only; reject image-only scans (OCR deferred).
-- Jobs: retryable, idempotent, observable (Horizon).
-- AI only via AI Manager stub first (fake provider OK).
-- Production path requires private S3 + malware scan (not MSW).
-
-### 9–11 — Public surface & admin
-
-- Public score already strong on FE; public profile must match baseline.
-- Admin is super-admin only; critical action: **Reprocess Resume**.
-
-### 12 — Deploy
-
-- GitHub Actions; no long-lived cloud credentials in repo.
-- Docker Compose for local and R1 deploy shape per baseline.
-
----
-
-## Out of scope for this sequence
-
-- R1b optimization, billing, JD analysis
-- AI vendor selection (not locked)
-- DOCX / OCR (R1c)
+- API: `App\Support\ApiResponse` + exception renders in `bootstrap/app.php`
+- FE types: `packages/shared-types` `ApiResponse` / `ApiError`
+- FE client: `apps/web/src/services/api-client.ts` unwrap + axios error mapping
+- MSW: `apps/web/src/mocks/envelope.ts` (`ok` / `fail`)
 
 ---
 
 ## Related docs
 
+- [backend/laravel-setup-r1a.md](./backend/laravel-setup-r1a.md)
 - Engineering baseline (locked decisions)
-- `docs/backend/laravel-setup-r1a.md` — Laravel 13 install steps
-- `apps/web` README / monorepo README — frontend runbook
