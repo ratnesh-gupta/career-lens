@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Auth\Http\Controllers\AuthController;
 use App\Modules\CareerProfile\Http\Controllers\ProfileController;
 use App\Modules\CareerProfile\Http\Controllers\PublicProfileController;
 use App\Modules\CareerScore\Http\Controllers\ScoreController;
@@ -24,11 +25,22 @@ Route::prefix('v1')->group(function () {
         return ApiResponse::success(['ok' => true]);
     });
 
-    // Public surfaces — no auth; privacy enforced in controllers
+    // Auth (public)
+    Route::post('/auth/register', [AuthController::class, 'register']);
+    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/auth/verify-email', [AuthController::class, 'verifyEmail']);
+
+    // Public surfaces
     Route::get('/public/scores/{token}', [ScoreController::class, 'publicShow']);
     Route::get('/public/profiles/{slug}', [PublicProfileController::class, 'show']);
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+
         Route::get('/profile', [ProfileController::class, 'show']);
         Route::patch('/profile', [ProfileController::class, 'update']);
 
