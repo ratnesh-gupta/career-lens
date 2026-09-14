@@ -6,52 +6,43 @@ Upload a resume → get a **Career Score** → see strengths, gaps, and what to 
 
 ---
 
-## Current status (2026-09-13)
+## Current status (2026-09-14)
 
 | Area | Status |
 |------|--------|
-| **Frontend R1a (Steps 1–6)** | ✅ Complete on `main` (`apps/web` + MSW) |
-| **Backend (Laravel 13 modular monolith)** | ❌ Not started — see setup guide |
-| **Production deploy** | ❌ Not started |
-| **R1b (optimization, versions, billing)** | Placeholders only |
+| **Frontend R1a** | ✅ `apps/web` |
+| **Backend R1a** | ✅ Laravel 13 modular API (`apps/api`) — auth, profile, resume, score, admin |
+| **Local infra** | ✅ Docker Compose (Postgres, Redis, MinIO) |
+| **CI / staging path** | ✅ GitHub Actions + deploy scripts |
+| **R1b** | Placeholders only |
 
-### Backend next
-
-1. [docs/implementation-sequence-r1a.md](./docs/implementation-sequence-r1a.md) — ordered R1a engineering sequence  
-2. [docs/backend/laravel-setup-r1a.md](./docs/backend/laravel-setup-r1a.md) — **Laravel 13** scaffold into `apps/api`
-
-### Frontend happy path (MSW)
-
-1. Landing `/`
-2. Register `/register`
-3. Dashboard
-4. Upload PDF `/resumes/upload`
-5. Processing → analysis
-6. Career Score `/score` + share
-7. Public card `/score/:token`
+**Local commands (dev + test):** → **[docs/local-development.md](./docs/local-development.md)**
 
 ---
 
-## Quick start (frontend)
+## Quick start (full stack)
 
 ```bash
 cd career-intelligence
+
+# 1) Infra
+docker compose up -d postgres redis minio minio-init
+
+# 2) API
+cd apps/api
+cp .env.example .env
+composer install && php artisan key:generate && php artisan migrate
+php artisan serve          # :8000
+# other terminal: php artisan queue:work redis
+
+# 3) Web
+cd ../..
 pnpm install
-cp apps/web/.env.example apps/web/.env.local
-pnpm --filter @careerlens/web dev
+cp apps/web/.env.example apps/web/.env.local   # VITE_ENABLE_MSW=false
+pnpm dev                   # :5173
 ```
 
-Open **http://localhost:5173**
-
-### Useful commands
-
-```bash
-pnpm --filter @careerlens/web dev
-pnpm --filter @careerlens/web build
-pnpm --filter @careerlens/web typecheck
-pnpm --filter @careerlens/web test
-pnpm --filter @careerlens/web lint
-```
+Frontend-only (mocks): set `VITE_ENABLE_MSW=true` — see [docs/local-development.md](./docs/local-development.md).
 
 ---
 
@@ -60,25 +51,28 @@ pnpm --filter @careerlens/web lint
 ```
 career-intelligence/
 ├── apps/
-│   ├── web/                 # React 18 + Vite + Tailwind + shadcn (R1a UI)
-│   └── api/                 # Laravel 13 — to be scaffolded
+│   ├── web/                 # React + Vite + Tailwind + shadcn
+│   └── api/                 # Laravel 13 modular monolith
 ├── packages/
 │   └── shared-types/
 ├── docs/
+│   ├── local-development.md # ← commands & local runbook
 │   ├── implementation-sequence-r1a.md
-│   ├── backend/laravel-setup-r1a.md
-│   └── decisions/
-├── docker-compose.yml       # to be added with API setup
-└── README.md
+│   ├── frontend-real-api.md
+│   ├── deploy-staging.md
+│   └── backend/
+├── deploy/                  # Dockerfiles, staging compose, scripts
+├── docker-compose.yml
+└── Makefile
 ```
 
 ---
 
 ## Stack
 
-**Frontend (locked):** React 18, TypeScript, Vite, Tailwind, shadcn/ui, TanStack Query, Zustand, RHF + Zod, MSW, Vitest, Playwright, Sentry, PostHog.
+**Frontend:** React 18, TypeScript, Vite, Tailwind, shadcn/ui, TanStack Query, Zustand, RHF + Zod, MSW (opt-in), Vitest, Playwright, Sentry, PostHog.
 
-**Backend (locked by baseline):** Laravel **13.x**, PHP 8.3+, Sanctum, PostgreSQL, Redis, Horizon, S3, Pest, PHPStan/Larastan, Pint, Pennant.
+**Backend:** Laravel 13.x, PHP 8.3+, Sanctum, PostgreSQL, Redis, Horizon, S3/MinIO, Pest, Pint, Pennant.
 
 ---
 
