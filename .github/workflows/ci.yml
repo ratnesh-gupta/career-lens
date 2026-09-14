@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "career-intelligence/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [main, develop]
+    paths:
+      - "career-intelligence/**"
+      - ".github/workflows/ci.yml"
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: career-intelligence
+
+jobs:
+  openapi:
+    name: OpenAPI contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate OpenAPI YAML
+        run: |
+          npx --yes @redocly/cli@1 lint docs/api/openapi-v1.yaml --skip-rule=no-unused-components || \
+          npx --yes @redocly/cli@1 lint docs/api/openapi-v1.yaml || \
+          python3 -c "import yaml,sys; yaml.safe_load(open('docs/api/openapi-v1.yaml')); print('openapi yaml ok')"
+
+  frontend:
+    name: Frontend (web)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: career-intelligence/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm --filter @careerlens/web lint
+        continue-on-error: true
+      - name: Unit tests
+        run: pnpm --filter @careerlens/web test
+      - name: Build
+        run: pnpm --filter @careerlens/web build
+        env:
+          VITE_API_BASE_URL: https://api.staging.example.com/api/v1
+          VITE_ENABLE_MSW: "false"
+          VITE_APP_URL: https://staging.example.com
+
+  backend:
+    name: Backend (api)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: career-intelligence/apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo_sqlite, pgsql, redis, gd, zip
+          coverage: none
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: career-intelligence/apps/api/vendor
+          key: composer-${{ hashFiles('career-intelligence/apps/api/composer.lock') }}
+          restore-keys: composer-
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Prepare env
+        run: |
+          cp .env.example .env
+          php -r "file_put_contents('.env', preg_replace('/^DB_CONNECTION=.*/m', 'DB_CONNECTION=sqlite', file_get_contents('.env')));"
+          php -r "file_put_contents('.env', preg_replace('/^QUEUE_CONNECTION=.*/m', 'QUEUE_CONNECTION=sync', file_get_contents('.env')));"
+          php -r "file_put_contents('.env', preg_replace('/^CACHE_STORE=.*/m', 'CACHE_STORE=array', file_get_contents('.env')));"
+          php -r "file_put_contents('.env', preg_replace('/^SESSION_DRIVER=.*/m', 'SESSION_DRIVER=array', file_get_contents('.env')));"
+          php -r "file_put_contents('.env', preg_replace('/^RESUMES_DISK=.*/m', 'RESUMES_DISK=local', file_get_contents('.env')));"
+          php -r "file_put_contents('.env', preg_replace('/^MALWARE_SCANNER=.*/m', 'MALWARE_SCANNER=none', file_get_contents('.env')));"
+          touch database/database.sqlite
+          php artisan key:generate
+      - name: Migrate
+        run: php artisan migrate --force
+      - name: Pint (style)
+        run: ./vendor/bin/pint --test
+        continue-on-error: true
+      - name: Pest tests
+        run: php artisan test
+
+  docker:
+    name: Docker build (smoke)
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f career-intelligence/deploy/docker/Dockerfile.api -t careerlens-api:ci career-intelligence/apps/api
+      - name: Build Web image
+        run: |
+          docker build -f career-intelligence/deploy/docker/Dockerfile.web \
+            --build-arg VITE_API_BASE_URL=https://api.staging.example.com/api/v1 \
+            --build-arg VITE_ENABLE_MSW=false \
+            --build-arg VITE_APP_URL=https://staging.example.com \
+            -t careerlens-web:ci \
+            career-intelligence

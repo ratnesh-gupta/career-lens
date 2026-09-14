@@ -1,0 +1,91 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "career-intelligence/**"
+      - ".github/workflows/deploy-staging.yml"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to deploy (default: develop)"
+        required: false
+        default: "develop"
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to staging EC2
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || 'develop' }}
+
+      - name: Required secrets check
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          STAGING_USER: ${{ secrets.STAGING_USER }}
+        run: |
+          missing=0
+          for v in STAGING_HOST STAGING_SSH_KEY STAGING_USER; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Missing secret $v — configure GitHub Environment 'staging'"
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Setup SSH
+        env:
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$STAGING_SSH_KEY" > ~/.ssh/staging_key
+          chmod 600 ~/.ssh/staging_key
+          ssh-keyscan -H "${{ secrets.STAGING_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Remote deploy
+        env:
+          HOST: ${{ secrets.STAGING_HOST }}
+          USER: ${{ secrets.STAGING_USER }}
+          DEPLOY_PATH: ${{ secrets.STAGING_DEPLOY_PATH || '/opt/careerlens' }}
+        run: |
+          ssh -i ~/.ssh/staging_key -o StrictHostKeyChecking=accept-new "$USER@$HOST" \
+            "bash -s" << EOF
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          git fetch --all
+          git checkout ${{ github.event.inputs.ref || 'develop' }}
+          git pull --ff-only origin ${{ github.event.inputs.ref || 'develop' }}
+          if [ -f career-intelligence/deploy/scripts/staging-deploy.sh ]; then
+            bash career-intelligence/deploy/scripts/staging-deploy.sh
+          else
+            echo "Deploy script missing"
+            exit 1
+          fi
+          EOF
+
+      - name: Health check
+        env:
+          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
+        run: |
+          if [ -z "${STAGING_API_URL}" ]; then
+            echo "STAGING_API_URL not set — skip remote health check"
+            exit 0
+          fi
+          for i in 1 2 3 4 5; do
+            if curl -fsS "${STAGING_API_URL}/api/v1/health" | grep -q '"success":true'; then
+              echo "Health OK"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Health check failed"
+          exit 1

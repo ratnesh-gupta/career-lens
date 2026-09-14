@@ -6,14 +6,18 @@
 
 | # | Item | Status |
 |---|------|--------|
-| **1–10** | Scaffold through FE real API | ✅ |
-| **11** | Super-admin Reprocess + admin | ✅ |
-| **12** | Staging CI → deploy | ⬜ Next |
+| **1–11** | Scaffold through super-admin | ✅ |
+| **12** | Staging CI → deploy | ✅ |
 
-## #11 notes
+## #12 notes
 
-- `users.role` includes `super_admin`
-- Middleware `super_admin` on `/api/v1/admin/*`
-- Admin: overview, resume list + **reprocess**, user list
-- FE: `/admin`, `/admin/resumes`, `/admin/users` + `RequireAdmin`
-- Promote: `php artisan admin:promote you@example.com`
+- CI: `.github/workflows/ci.yml` (OpenAPI, FE, BE, Docker smoke)
+- Deploy: `.github/workflows/deploy-staging.yml` → EC2 via SSH on `develop`
+- Images: `deploy/docker/Dockerfile.api` + `Dockerfile.web`
+- Compose: `deploy/docker-compose.staging.yml`
+- Guide: [deploy-staging.md](./deploy-staging.md)
+- Readiness: `GET /api/v1/ready`
+
+## R1a sequence complete
+
+Next work is outside this list (production deploy hardening, real AI provider, OCR, R1b).

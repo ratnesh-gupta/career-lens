@@ -10,6 +10,8 @@ use App\Modules\CareerScore\Http\Controllers\ScoreController;
 use App\Modules\Resume\Http\Controllers\ResumeController;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -17,6 +19,42 @@ Route::prefix('v1')->group(function () {
         return ApiResponse::success([
             'status' => 'ok',
             'service' => 'careerlens-api',
+        ]);
+    });
+
+    /**
+     * Readiness — dependency checks for load balancers / deploy gates.
+     */
+    Route::get('/ready', function () {
+        $checks = [
+            'database' => false,
+            'redis' => false,
+        ];
+
+        try {
+            DB::connection()->getPdo();
+            $checks['database'] = true;
+        } catch (\Throwable) {
+            $checks['database'] = false;
+        }
+
+        try {
+            Redis::connection()->ping();
+            $checks['redis'] = true;
+        } catch (\Throwable) {
+            // Local/sqlite CI may not run Redis — mark optional unless QUEUE uses redis
+            $checks['redis'] = config('queue.default') !== 'redis';
+        }
+
+        $ready = $checks['database'] === true;
+
+        if (! $ready) {
+            return ApiResponse::error('NOT_READY', 'Service dependencies unavailable.', $checks, 503);
+        }
+
+        return ApiResponse::success([
+            'status' => 'ready',
+            'checks' => $checks,
         ]);
     });
 
@@ -61,7 +99,6 @@ Route::prefix('v1')->group(function () {
         Route::post('/resumes/{id}/primary', [ResumeController::class, 'setPrimary']);
         Route::post('/resumes/{id}/reprocess', [ResumeController::class, 'reprocess']);
 
-        // Super-admin ops
         Route::middleware('super_admin')->prefix('admin')->group(function () {
             Route::get('/overview', [AdminDashboardController::class, 'overview']);
             Route::get('/resumes', [AdminResumeController::class, 'index']);

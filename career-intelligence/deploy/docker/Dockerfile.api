@@ -1,0 +1,34 @@
+# CareerLens API — Laravel 13 / PHP 8.3
+FROM php:8.3-cli-bookworm AS vendor
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git unzip libpq-dev libzip-dev \
+    && docker-php-ext-install pdo_pgsql zip \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+WORKDIR /app
+COPY composer.json composer.lock* ./
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+
+FROM php:8.3-cli-bookworm
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev libzip-dev curl \
+    && docker-php-ext-install pdo_pgsql zip pcntl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /var/www/html
+COPY --from=vendor /app/vendor ./vendor
+COPY . .
+
+RUN mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
+    && chmod -R ug+rwx storage bootstrap/cache
+
+ENV APP_ENV=production \
+    LOG_CHANNEL=stderr
+
+EXPOSE 8000
+
+# Default: HTTP server. Override command for queue/horizon workers.
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
