@@ -10,6 +10,8 @@ export const ROUTES = {
   PRIVACY: "/privacy",
   TERMS: "/terms",
   COOKIES: "/cookies",
+  REFUND: "/refund",
+  CONTACT: "/contact",
 
   // Auth (guest)
   LOGIN: "/login",
