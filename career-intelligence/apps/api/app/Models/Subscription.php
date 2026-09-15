@@ -10,6 +10,8 @@ class Subscription extends Model
 {
     public const PROVIDER_INTERNAL = 'internal';
 
+    public const PROVIDER_RAZORPAY = 'razorpay';
+
     public const PROVIDER_STRIPE = 'stripe';
 
     public const STATUS_ACTIVE = 'active';

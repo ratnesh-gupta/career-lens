@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Entitlement;
 use App\Models\Plan;
+use App\Models\PlanPrice;
 use App\Modules\Billing\FeatureCodes;
 use Illuminate\Database\Seeder;
 
@@ -46,8 +47,16 @@ class PlanSeeder extends Seeder
             FeatureCodes::AI_REWRITES_PER_MONTH => 200,
             FeatureCodes::JD_ANALYSIS => 1,
             FeatureCodes::PDF_EXPORTS_PER_MONTH => 50,
-            FeatureCodes::RESUME_VERSIONS_MAX => null, // unlimited
+            FeatureCodes::RESUME_VERSIONS_MAX => null,
         ]);
+
+        // Country list prices (product-tunable)
+        $this->seedPrice($pro, 'IN', 'INR', PlanPrice::INTERVAL_MONTH, 49900);   // ₹499
+        $this->seedPrice($pro, 'IN', 'INR', PlanPrice::INTERVAL_YEAR, 499900);    // ₹4,999
+        $this->seedPrice($pro, 'US', 'USD', PlanPrice::INTERVAL_MONTH, 1200);     // $12.00
+        $this->seedPrice($pro, 'US', 'USD', PlanPrice::INTERVAL_YEAR, 9900);      // $99.00
+        $this->seedPrice($pro, PlanPrice::COUNTRY_DEFAULT, 'USD', PlanPrice::INTERVAL_MONTH, 1200);
+        $this->seedPrice($pro, PlanPrice::COUNTRY_DEFAULT, 'USD', PlanPrice::INTERVAL_YEAR, 9900);
     }
 
     /**
@@ -67,5 +76,26 @@ class PlanSeeder extends Seeder
                 ],
             );
         }
+    }
+
+    private function seedPrice(
+        Plan $plan,
+        string $country,
+        string $currency,
+        string $interval,
+        int $amountMinor,
+    ): void {
+        PlanPrice::query()->updateOrCreate(
+            [
+                'plan_id' => $plan->id,
+                'country_code' => strtoupper($country),
+                'interval' => $interval,
+            ],
+            [
+                'currency' => strtoupper($currency),
+                'amount_minor' => $amountMinor,
+                'status' => PlanPrice::STATUS_ACTIVE,
+            ],
+        );
     }
 }
