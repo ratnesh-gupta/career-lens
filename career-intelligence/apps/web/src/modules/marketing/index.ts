@@ -3,6 +3,7 @@ export { default as PricingPage } from "./pages/PricingPage";
 export { default as AboutPage } from "./pages/AboutPage";
 export { default as PrivacyPage } from "./pages/PrivacyPage";
 export { default as TermsPage } from "./pages/TermsPage";
+export { default as CookiesPage } from "./pages/CookiesPage";
 
 export { LANDING } from "./content/landing-content";
 export { ScoreRing } from "./components/score-ring";
