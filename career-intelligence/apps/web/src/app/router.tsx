@@ -80,6 +80,14 @@ export const router = createBrowserRouter([
     path: ROUTES.COOKIES,
     element: lazyElement(() => import("@/modules/marketing/pages/CookiesPage"), "Cookies"),
   },
+  {
+    path: ROUTES.REFUND,
+    element: lazyElement(() => import("@/modules/marketing/pages/RefundPage"), "Refund"),
+  },
+  {
+    path: ROUTES.CONTACT,
+    element: lazyElement(() => import("@/modules/marketing/pages/ContactPage"), "Contact"),
+  },
 
   {
     path: ROUTES.PUBLIC_SCORE_PATTERN,
