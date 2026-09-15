@@ -247,6 +247,7 @@ export const LANDING = {
       title: "Company",
       links: [
         { label: "About", href: "/about" },
+        { label: "Contact", href: "/contact" },
         { label: "Login", href: "/login" },
         { label: "Register", href: "/register" },
       ],
@@ -257,6 +258,7 @@ export const LANDING = {
         { label: "Privacy", href: "/privacy" },
         { label: "Terms", href: "/terms" },
         { label: "Cookies", href: "/cookies" },
+        { label: "Refunds", href: "/refund" },
       ],
     },
     social: {
