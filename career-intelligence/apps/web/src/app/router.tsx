@@ -76,6 +76,10 @@ export const router = createBrowserRouter([
     path: ROUTES.TERMS,
     element: lazyElement(() => import("@/modules/marketing/pages/TermsPage"), "Terms"),
   },
+  {
+    path: ROUTES.COOKIES,
+    element: lazyElement(() => import("@/modules/marketing/pages/CookiesPage"), "Cookies"),
+  },
 
   {
     path: ROUTES.PUBLIC_SCORE_PATTERN,
