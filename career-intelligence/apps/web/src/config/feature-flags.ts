@@ -7,7 +7,8 @@ export const flags = {
   MSW_ENABLED: Boolean(env.VITE_ENABLE_MSW) && Boolean(import.meta.env.DEV),
   DEVTOOLS_ENABLED: env.VITE_ENABLE_DEVTOOLS,
   DARK_MODE: false,
-  BILLING: false,
+  /** R1b Sequence #2 — billing page + Razorpay checkout */
+  BILLING: true,
   OPTIMIZATION: false,
   REFERRAL_PROGRAM: false,
 } as const;

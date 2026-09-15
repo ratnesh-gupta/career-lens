@@ -240,11 +240,7 @@ export const router = createBrowserRouter([
       },
       {
         path: ROUTES.BILLING,
-        element: (
-          <RequireEntitlement flag="BILLING" title="Billing">
-            <ComingSoonPage title="Billing" />
-          </RequireEntitlement>
-        ),
+        element: lazyElement(() => import("@/modules/billing/pages/BillingPage"), "Billing"),
       },
     ],
   },
