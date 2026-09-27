@@ -2,10 +2,15 @@
 
 use App\Models\CareerProfile;
 use App\Models\User;
+use Database\Seeders\PlanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->seed(PlanSeeder::class);
+});
 
 test('register creates user profile and returns token envelope', function () {
     $response = $this->postJson('/api/v1/auth/register', [

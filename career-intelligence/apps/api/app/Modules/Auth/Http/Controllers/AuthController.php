@@ -8,6 +8,7 @@ use App\Modules\Auth\Actions\IssueTokenPair;
 use App\Modules\Auth\Http\Requests\LoginRequest;
 use App\Modules\Auth\Http\Requests\RegisterRequest;
 use App\Modules\Auth\Http\Resources\UserResource;
+use App\Modules\Billing\Actions\EnsureFreeSubscriptionForUser;
 use App\Modules\CareerProfile\Actions\EnsureCareerProfileForUser;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ class AuthController extends Controller
         RegisterRequest $request,
         IssueTokenPair $issue,
         EnsureCareerProfileForUser $ensureProfile,
+        EnsureFreeSubscriptionForUser $ensureFreeSubscription,
     ): JsonResponse {
         $user = User::query()->create([
             'name' => $request->string('displayName')->toString(),
@@ -29,6 +31,7 @@ class AuthController extends Controller
         ]);
 
         $ensureProfile($user);
+        $ensureFreeSubscription($user);
 
         return ApiResponse::success($issue($user), [], 201);
     }
