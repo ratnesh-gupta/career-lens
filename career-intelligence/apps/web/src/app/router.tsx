@@ -212,11 +212,7 @@ export const router = createBrowserRouter([
 
       {
         path: ROUTES.TARGET_ROLE,
-        element: (
-          <RequireEntitlement flag="OPTIMIZATION" title="Target role">
-            <ComingSoonPage title="Target role" />
-          </RequireEntitlement>
-        ),
+        element: lazyElement(() => import("@/modules/target-role/pages/TargetRolePage"), "Target role"),
       },
       {
         path: ROUTES.OPTIMIZATION,

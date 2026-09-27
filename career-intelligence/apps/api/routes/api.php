@@ -9,6 +9,7 @@ use App\Modules\CareerProfile\Http\Controllers\ProfileController;
 use App\Modules\CareerProfile\Http\Controllers\PublicProfileController;
 use App\Modules\CareerScore\Http\Controllers\ScoreController;
 use App\Modules\Resume\Http\Controllers\ResumeController;
+use App\Modules\TargetRole\Http\Controllers\TargetRoleController;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -108,6 +109,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/billing/entitlements', [BillingController::class, 'entitlements']);
         Route::get('/billing/subscription', [BillingController::class, 'subscription']);
         Route::post('/billing/checkout', [BillingController::class, 'checkout']);
+
+        // R1b target roles
+        Route::get('/target-roles', [TargetRoleController::class, 'index']);
+        Route::post('/target-roles', [TargetRoleController::class, 'store']);
+        Route::patch('/target-roles/{id}', [TargetRoleController::class, 'update']);
+        Route::delete('/target-roles/{id}', [TargetRoleController::class, 'destroy']);
 
         Route::middleware('super_admin')->prefix('admin')->group(function () {
             Route::get('/overview', [AdminDashboardController::class, 'overview']);

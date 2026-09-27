@@ -42,6 +42,10 @@ export const EP = {
   BILLING_SUBSCRIPTION: "/billing/subscription",
   BILLING_CHECKOUT: "/billing/checkout",
 
+  // Target roles (R1b)
+  TARGET_ROLES: "/target-roles",
+  TARGET_ROLE: (id: string) => `/target-roles/${id}`,
+
   // Admin (super_admin)
   ADMIN_OVERVIEW: "/admin/overview",
   ADMIN_RESUMES: "/admin/resumes",
